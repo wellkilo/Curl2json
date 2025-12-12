@@ -1,0 +1,914 @@
+package extractor
+
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+	"strings"
+)
+
+// TreeExtractor 树抽取器
+type TreeExtractor struct {
+	titleKeys    []string
+	childrenKeys []string
+	verbose      bool
+	maxDepth     int
+}
+
+// SimplifiedNode 简化的树节点结构
+type SimplifiedNode struct {
+	CaseTitle string            `json:"case_title"`
+	Children  []*SimplifiedNode `json:"children"`
+}
+
+// New 创建新的树抽取器
+func New(titleKeys, childrenKeys []string, verbose bool) *TreeExtractor {
+	if len(titleKeys) == 0 {
+		titleKeys = []string{"case_title", "title", "name", "label"}
+	}
+	if len(childrenKeys) == 0 {
+		childrenKeys = []string{"children", "nodes", "sub_cases", "items", "data"}
+	}
+
+	return &TreeExtractor{
+		titleKeys:    titleKeys,
+		childrenKeys: childrenKeys,
+		verbose:      verbose,
+		maxDepth:     100, // 防止无限递归
+	}
+}
+
+// Extract 从原始JSON中抽取树状结构
+func (e *TreeExtractor) Extract(data []byte) ([]byte, error) {
+	var rawData interface{}
+	if err := json.Unmarshal(data, &rawData); err != nil {
+		return nil, fmt.Errorf("JSON解析失败: %w", err)
+	}
+
+	if e.verbose {
+		fmt.Printf("开始抽取树状结构，标题候选键: %v, 子节点候选键: %v\n", e.titleKeys, e.childrenKeys)
+	}
+
+	var result interface{}
+
+	// 强制使用业务文本提取，避免技术元数据干扰
+	if e.verbose {
+		fmt.Println("强制使用业务文本提取模式...")
+	}
+	result = e.createDefaultStructure(rawData)
+	if result == nil {
+		return nil, fmt.Errorf("未找到有效的树状结构")
+	}
+
+	// 序列化结果
+	output, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("结果序列化失败: %w", err)
+	}
+
+	if e.verbose {
+		fmt.Println("树状结构抽取完成")
+	}
+
+	return output, nil
+}
+
+// ExtractTextContent 从复杂的JSON数据中提取所有文本内容
+func (e *TreeExtractor) ExtractTextContent(data interface{}) []string {
+	var texts []string
+
+	switch v := data.(type) {
+	case string:
+		if v != "" && e.isBusinessText(v) {
+			texts = append(texts, v)
+		}
+	case map[string]interface{}:
+		// 优先查找richText数组中的text字段
+		if richTextArray, exists := v["richText"]; exists {
+			if richTextItems, ok := richTextArray.([]interface{}); ok {
+				for _, item := range richTextItems {
+					if richTextObj, ok := item.(map[string]interface{}); ok {
+						if textVal, textExists := richTextObj["text"]; textExists {
+							if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+								texts = append(texts, textStr)
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// 查找其他可能的text字段
+		for key, value := range v {
+			// 只关注包含text的字段
+			if key == "text" || strings.Contains(key, "text") {
+				if textVal, ok := value.(string); ok && textVal != "" && e.isBusinessText(textVal) {
+					texts = append(texts, textVal)
+				}
+			} else if key == "title" || key == "name" || key == "label" || key == "message" || key == "description" {
+				if textVal, ok := value.(string); ok && textVal != "" && e.isBusinessText(textVal) {
+					texts = append(texts, textVal)
+				}
+			} else {
+				// 递归处理嵌套结构
+				texts = append(texts, e.ExtractTextContent(value)...)
+			}
+		}
+	case []interface{}:
+		for _, item := range v {
+			texts = append(texts, e.ExtractTextContent(item)...)
+		}
+	default:
+		// 对于其他类型，不处理，避免技术字段混入
+	}
+
+	return texts
+}
+
+// isBusinessText 判断文本是否为业务文本（非技术字段）
+func (e *TreeExtractor) isBusinessText(text string) bool {
+	if text == "" {
+		return false
+	}
+
+	// 过滤掉明显的技术字段和ID
+	technicalKeywords := []string{
+		"CreatedAt", "UpdatedAt", "TestCaseId", "ProductId", "errCode",
+		"Status", "StatusCode", "CaseNum", "BaseType", "SourceType",
+		"IsTemplate", "IsStrict", "Theme", "Remark", "Template",
+		"EntityId", "EntityVersion", "CustomFields", "Directory",
+		"CreatedBy", "UpdatedBy", "ParentDirLink", "BaseResp",
+		"CreatedAtTS", "UpdatedAtTS", "TestCaseStatus", "CommentInfo",
+		"BelongIDList", "MarkingCheck", "StrictMindVersion",
+		"BitsDependencies", "TempParentDirLink", "FlowItemList",
+		"ScriptCaseList", "images", "imageSize", "hyperlink",
+		"hyperlinkTitle", "progress", "priority", "script_task",
+		"resource", "nodeType", "parentID", "attachment", "genId",
+		"WorkItemTypeKey", "RequirementId", "RequirementLink",
+		"RequirementSource", "RequirementTitle", "project", "projectName",
+		"UserKey", "DisplayName", "EnName", "DirId", "DirName",
+		"DirNameEn", "total", "finish", "session_id", "expiry_time",
+		"token_type", "permissions", "user", "donghe", "kilov",
+		"sess_", "JWT", "debug_info", "details", "suggestions",
+		"Please refresh", "Check your", "Contact support", "Auth",
+		"ERROR", "validate", "failed", "expired", "Token",
+		"王通", "张三", "李四", "wangtong", "Created By", "updated by",
+	}
+
+	// 检查是否包含技术关键词
+	for _, keyword := range technicalKeywords {
+		if strings.Contains(text, keyword) {
+			return false
+		}
+	}
+
+	// 过滤掉人名模式（通常是2-3个中文字符，后面可能跟点号）
+	if len([]rune(text)) >= 2 && len([]rune(text)) <= 4 && hasChinese(text) {
+		// 简单的人名检测
+		if !strings.Contains(text, "测试") && !strings.Contains(text, "优化") &&
+		   !strings.Contains(text, "性能") && !strings.Contains(text, "场景") &&
+		   !strings.Contains(text, "验证") && !strings.Contains(text, "回归") {
+			return false // 很可能是人名
+		}
+	}
+
+	// 检查是否为纯技术数据（如时间戳、ID、数字等）
+	if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") ||
+	   strings.HasPrefix(text, "e+") || strings.HasPrefix(text, "E+") ||
+	   strings.HasPrefix(text, "[]") || strings.HasPrefix(text, "{}") ||
+	   strings.HasPrefix(text, "map[") || strings.Contains(text, ": 0") ||
+	   strings.Contains(text, ": 1") || strings.Contains(text, ": false") ||
+	   strings.Contains(text, ": true") || strings.Contains(text, "read write") {
+		return false
+	}
+
+	// 过滤掉短英文技术词汇
+	shortTechnicalWords := []string{"api", "url", "http", "get", "post", "put", "delete"}
+	for _, word := range shortTechnicalWords {
+		if strings.EqualFold(text, word) {
+			return false
+		}
+	}
+
+	// 检查是否为中文或英文业务文本
+	if hasChinese(text) {
+		return true
+	}
+
+	// 英文文本需要更长且包含业务词汇
+	if isEnglishBusinessText(text) {
+		return true
+	}
+
+	return false
+}
+
+// hasChinese 检查文本是否包含中文字符
+func hasChinese(text string) bool {
+	for _, r := range text {
+		if r >= 0x4e00 && r <= 0x9fff {
+			return true
+		}
+	}
+	return false
+}
+
+// isEnglishBusinessText 检查是否为英文业务文本
+func isEnglishBusinessText(text string) bool {
+	// 过滤掉太短的文本
+	if len(text) < 3 {
+		return false
+	}
+
+	// 检查是否为有意义的英文词汇
+	meaningfulWords := []string{
+		"test", "check", "verify", "validate", "confirm", "review",
+		"optimize", "performance", "scenario", "case", "step",
+		"benchmark", "baseline", "regression", "functional",
+		"integration", "monitor", "alert", "security", "login",
+		"logout", "auth", "user", "admin", "system", "feature",
+		"module", "component", "service", "api", "endpoint",
+		"request", "response", "client", "server", "database",
+	"frontend", "backend", "interface", "config", "setting",
+	}
+
+	textLower := strings.ToLower(text)
+	for _, word := range meaningfulWords {
+		if strings.Contains(textLower, word) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// createDefaultStructure 为非标准响应创建默认树状结构，只提取业务文本
+func (e *TreeExtractor) createDefaultStructure(data interface{}) *SimplifiedNode {
+	if e.verbose {
+		fmt.Println("创建默认树状结构...")
+	}
+
+	// 优先尝试解析TestCaseMind的三层结构
+	if testCaseMindNode := e.extractTestCaseMindStructure(data); testCaseMindNode != nil {
+		if e.verbose {
+			fmt.Println("成功解析TestCaseMind三层结构")
+		}
+		return testCaseMindNode
+	}
+
+	// 回退到通用的业务文本提取
+	return e.createGenericBusinessTextStructure(data)
+}
+
+// extractTestCaseMindStructure 专门解析TestCaseMind的三层嵌套结构
+func (e *TreeExtractor) extractTestCaseMindStructure(data interface{}) *SimplifiedNode {
+	// 将数据转换为map以便访问
+	dataMap, ok := data.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	// 查找data字段
+	dataField, exists := dataMap["data"]
+	if !exists {
+		return nil
+	}
+
+	dataMap2, ok := dataField.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	// 查找TestCaseMind字段
+	testCaseMind, exists := dataMap2["TestCaseMind"]
+	if !exists {
+		return nil
+	}
+
+	testCaseMindStr, ok := testCaseMind.(string)
+	if !ok {
+		return nil
+	}
+
+	// 解析TestCaseMind JSON字符串
+	var testCaseMindData map[string]interface{}
+	if err := json.Unmarshal([]byte(testCaseMindStr), &testCaseMindData); err != nil {
+		if e.verbose {
+			fmt.Printf("解析TestCaseMind JSON失败: %v\n", err)
+		}
+		return nil
+	}
+
+	// 提取第一层：根节点的text
+	rootData, ok := testCaseMindData["data"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	rootText, ok := rootData["text"].(string)
+	if !ok {
+		return nil
+	}
+
+	// 检查根文本是否是业务文本
+	if !e.isBusinessText(rootText) {
+		return nil
+	}
+
+	// 创建根节点
+	rootNode := &SimplifiedNode{
+		CaseTitle: rootText,
+		Children:  []*SimplifiedNode{},
+	}
+
+	// 提取第二层：children数组
+	childrenData, exists := testCaseMindData["children"]
+	if !exists {
+		return rootNode
+	}
+
+	childrenArray, ok := childrenData.([]interface{})
+	if !ok || len(childrenArray) == 0 {
+		return rootNode
+	}
+
+	// 处理第一个子节点（第二层标题）
+	firstChild, ok := childrenArray[0].(map[string]interface{})
+	if !ok {
+		return rootNode
+	}
+
+	firstChildData, ok := firstChild["data"].(map[string]interface{})
+	if !ok {
+		return rootNode
+	}
+
+	secondLevelText, ok := firstChildData["text"].(string)
+	if !ok {
+		return rootNode
+	}
+
+	// 检查二级标题是否是业务文本
+	if !e.isBusinessText(secondLevelText) {
+		return rootNode
+	}
+
+	// 创建第二层节点
+	secondLevelNode := &SimplifiedNode{
+		CaseTitle: secondLevelText,
+		Children:  []*SimplifiedNode{},
+	}
+
+	// 提取第三层： grandchildren数组
+	grandchildrenData, exists := firstChild["children"]
+	if !exists {
+		rootNode.Children = append(rootNode.Children, secondLevelNode)
+		return rootNode
+	}
+
+	grandchildrenArray, ok := grandchildrenData.([]interface{})
+	if !ok {
+		rootNode.Children = append(rootNode.Children, secondLevelNode)
+		return rootNode
+	}
+
+	// 处理第三层标题
+	seen := make(map[string]bool)
+	for _, grandchild := range grandchildrenArray {
+		grandchildMap, ok := grandchild.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		grandchildData, ok := grandchildMap["data"].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		// 优先从richText中提取text
+		if richTextArray, exists := grandchildData["richText"]; exists {
+			if richTextItems, ok := richTextArray.([]interface{}); ok {
+				for _, item := range richTextItems {
+					if richTextObj, ok := item.(map[string]interface{}); ok {
+						if textVal, textExists := richTextObj["text"]; textExists {
+							if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) && !seen[textStr] {
+								thirdLevelNode := &SimplifiedNode{
+									CaseTitle: textStr,
+									Children:  []*SimplifiedNode{},
+								}
+								secondLevelNode.Children = append(secondLevelNode.Children, thirdLevelNode)
+								seen[textStr] = true
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// 如果没有richText，则使用text字段
+		if textVal, ok := grandchildData["text"].(string); ok && textVal != "" && e.isBusinessText(textVal) && !seen[textVal] {
+			thirdLevelNode := &SimplifiedNode{
+				CaseTitle: textVal,
+				Children:  []*SimplifiedNode{},
+			}
+			secondLevelNode.Children = append(secondLevelNode.Children, thirdLevelNode)
+			seen[textVal] = true
+		}
+	}
+
+	// 构建最终的三层结构
+	rootNode.Children = append(rootNode.Children, secondLevelNode)
+
+	if e.verbose {
+		fmt.Printf("构建三层结构: 标题='%s', 二级标题='%s', 三级标题数量=%d\n",
+			rootText, secondLevelText, len(secondLevelNode.Children))
+	}
+
+	return rootNode
+}
+
+// createGenericBusinessTextStructure 创建通用的业务文本结构（回退方案）
+func (e *TreeExtractor) createGenericBusinessTextStructure(data interface{}) *SimplifiedNode {
+	node := &SimplifiedNode{
+		Children: []*SimplifiedNode{},
+	}
+
+	// 使用ExtractTextContent提取所有业务文本内容
+	texts := e.ExtractTextContent(data)
+
+	// 过滤掉技术字段，只保留真正的业务文本
+	var businessTexts []string
+	seen := make(map[string]bool) // 用于去重
+	for _, text := range texts {
+		if e.isBusinessText(text) && !seen[text] {
+			businessTexts = append(businessTexts, text)
+			seen[text] = true
+		}
+	}
+
+	// 如果没有找到业务文本，使用默认标题
+	if len(businessTexts) == 0 {
+		node.CaseTitle = "API Response"
+		return node
+	}
+
+	// 选择最长的文本作为标题（通常是最详细的业务描述）
+	titleIndex := 0
+	for i, text := range businessTexts {
+		if len([]rune(text)) > len([]rune(businessTexts[titleIndex])) {
+			titleIndex = i
+		}
+	}
+
+	// 设置最长的文本作为标题
+	node.CaseTitle = businessTexts[titleIndex]
+
+	// 将其余业务文本作为子节点（按长度排序，长的在前）
+	var childTexts []string
+	for i, text := range businessTexts {
+		if i != titleIndex {
+			childTexts = append(childTexts, text)
+		}
+	}
+
+	// 按文本长度降序排序子节点
+	for i := 0; i < len(childTexts)-1; i++ {
+		for j := i + 1; j < len(childTexts); j++ {
+			if len([]rune(childTexts[i])) < len([]rune(childTexts[j])) {
+				childTexts[i], childTexts[j] = childTexts[j], childTexts[i]
+			}
+		}
+	}
+
+	// 创建子节点
+	for _, text := range childTexts {
+		childNode := &SimplifiedNode{
+			CaseTitle: text,
+			Children:  []*SimplifiedNode{},
+		}
+		node.Children = append(node.Children, childNode)
+	}
+
+	if e.verbose {
+		fmt.Printf("提取到 %d 个唯一业务文本，标题: %s\n", len(businessTexts), node.CaseTitle)
+		fmt.Printf("子节点数量: %d\n", len(node.Children))
+	}
+
+	return node
+}
+
+// extractTree 递归抽取树结构
+func (e *TreeExtractor) extractTree(obj map[string]interface{}, depth int) *SimplifiedNode {
+	if depth > e.maxDepth {
+		if e.verbose {
+			fmt.Printf("警告: 达到最大递归深度 %d，停止递归\n", e.maxDepth)
+		}
+		return nil
+	}
+
+	node := &SimplifiedNode{
+		Children: []*SimplifiedNode{},
+	}
+
+	// 1. 查找标题
+	title := e.findTitle(obj)
+	node.CaseTitle = title
+
+	// 2. 查找子节点并递归
+	children := e.findChildren(obj)
+	for _, childData := range children {
+		if childObj, ok := childData.(map[string]interface{}); ok {
+			if childNode := e.extractTree(childObj, depth+1); childNode != nil {
+				node.Children = append(node.Children, childNode)
+			}
+		}
+	}
+
+	// 3. 如果没有找到标准子节点，将所有嵌套对象作为子节点
+	if len(node.Children) == 0 {
+		for key, value := range obj {
+			if key == title || value == nil {
+				continue // 跳过标题字段和nil值
+			}
+
+			switch v := value.(type) {
+			case map[string]interface{}:
+				// 处理嵌套对象
+				nestedNode := &SimplifiedNode{
+					CaseTitle: fmt.Sprintf("%s (Object)", key),
+					Children:  []*SimplifiedNode{},
+				}
+
+				for nestedKey, nestedValue := range v {
+					if nestedStr, ok := nestedValue.(string); ok && nestedStr != "" {
+						nestedChild := &SimplifiedNode{
+							CaseTitle: fmt.Sprintf("%s: %s", nestedKey, nestedStr),
+							Children:  []*SimplifiedNode{},
+						}
+						nestedNode.Children = append(nestedNode.Children, nestedChild)
+					} else if nestedValue != nil {
+						nestedChild := &SimplifiedNode{
+							CaseTitle: fmt.Sprintf("%s: %v", nestedKey, nestedValue),
+							Children:  []*SimplifiedNode{},
+						}
+						nestedNode.Children = append(nestedNode.Children, nestedChild)
+					}
+				}
+
+				if len(nestedNode.Children) > 0 {
+					node.Children = append(node.Children, nestedNode)
+				}
+
+			case []interface{}:
+				// 处理数组
+				arrayNode := &SimplifiedNode{
+					CaseTitle: fmt.Sprintf("%s (Array - %d items)", key, len(v)),
+					Children:  []*SimplifiedNode{},
+				}
+
+				for i, item := range v {
+					if itemStr, ok := item.(string); ok && itemStr != "" {
+						arrayChild := &SimplifiedNode{
+							CaseTitle: fmt.Sprintf("[%d]: %s", i, itemStr),
+							Children:  []*SimplifiedNode{},
+						}
+						arrayNode.Children = append(arrayNode.Children, arrayChild)
+					} else if item != nil {
+						arrayChild := &SimplifiedNode{
+							CaseTitle: fmt.Sprintf("[%d]: %v", i, item),
+							Children:  []*SimplifiedNode{},
+						}
+						arrayNode.Children = append(arrayNode.Children, arrayChild)
+					}
+				}
+
+				if len(arrayNode.Children) > 0 {
+					node.Children = append(node.Children, arrayNode)
+				}
+			}
+		}
+	}
+
+	// 3. 只有当节点有标题或有子节点时才返回该节点
+	if node.CaseTitle != "" || len(node.Children) > 0 {
+		return node
+	}
+
+	return nil
+}
+
+// findTitle 查找节点标题
+func (e *TreeExtractor) findTitle(obj map[string]interface{}) string {
+	for _, key := range e.titleKeys {
+		if value, exists := obj[key]; exists {
+			if title, ok := value.(string); ok && title != "" {
+				return title
+			}
+		}
+	}
+	return ""
+}
+
+// findChildren 查找子节点数组
+func (e *TreeExtractor) findChildren(obj map[string]interface{}) []interface{} {
+	for _, key := range e.childrenKeys {
+		if value, exists := obj[key]; exists {
+			// 检查是否为数组
+			if reflect.TypeOf(value).Kind() == reflect.Slice {
+				if children, ok := value.([]interface{}); ok && len(children) > 0 {
+					return children
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// deepSearchInObject 深度搜索对象中的树结构
+func (e *TreeExtractor) deepSearchInObject(obj map[string]interface{}) interface{} {
+	// 检查当前对象是否有树结构
+	if node := e.extractTree(obj, 0); node != nil {
+		return node
+	}
+
+	// 常见的数据包装键
+	dataKeys := []string{"data", "result", "response", "items", "list", "value"}
+
+	// 递归搜索所有可能的嵌套结构
+	return e.recursiveSearch(obj, dataKeys, 0)
+}
+
+// recursiveSearch 递归搜索树结构
+func (e *TreeExtractor) recursiveSearch(data interface{}, keys []string, depth int) interface{} {
+	if depth > e.maxDepth {
+		return nil
+	}
+
+	switch v := data.(type) {
+	case map[string]interface{}:
+		// 检查当前对象是否是树结构
+		if node := e.extractTree(v, depth); node != nil {
+			return node
+		}
+
+		// 先尝试指定的键
+		for _, key := range keys {
+			if value, exists := v[key]; exists {
+				if result := e.recursiveSearch(value, keys, depth+1); result != nil {
+					return result
+				}
+			}
+		}
+
+		// 然后递归搜索所有值
+		for _, value := range v {
+			if result := e.recursiveSearch(value, keys, depth+1); result != nil {
+				return result
+			}
+		}
+
+	case []interface{}:
+		// 搜索数组中的每个元素
+		var roots []*SimplifiedNode
+		for _, item := range v {
+			if result := e.recursiveSearch(item, keys, depth+1); result != nil {
+				if node, ok := result.(*SimplifiedNode); ok {
+					roots = append(roots, node)
+				} else if nodeArray, ok := result.([]*SimplifiedNode); ok {
+					roots = append(roots, nodeArray...)
+				}
+			}
+		}
+		if len(roots) > 0 {
+			return roots
+		}
+	}
+
+	return nil
+}
+
+// searchInObject 在对象的值中搜索树结构
+func (e *TreeExtractor) searchInObject(obj map[string]interface{}) interface{} {
+	// 常见的数据包装键，如 "data", "result" 等
+	dataKeys := []string{"data", "result", "response", "items", "list"}
+
+	// 先尝试常见的数据键
+	for _, key := range dataKeys {
+		if value, exists := obj[key]; exists {
+			if arr, ok := value.([]interface{}); ok {
+				var roots []*SimplifiedNode
+				for _, item := range arr {
+					if childObj, ok := item.(map[string]interface{}); ok {
+						if node := e.extractTree(childObj, 0); node != nil {
+							roots = append(roots, node)
+						}
+					}
+				}
+				if len(roots) > 0 {
+					return roots
+				}
+			} else if childObj, ok := value.(map[string]interface{}); ok {
+				if node := e.extractTree(childObj, 0); node != nil {
+					return node
+				}
+			}
+		}
+	}
+
+	// 如果常见键没找到，遍历所有值
+	for _, value := range obj {
+		if arr, ok := value.([]interface{}); ok {
+			var roots []*SimplifiedNode
+			for _, item := range arr {
+				if childObj, ok := item.(map[string]interface{}); ok {
+					if node := e.extractTree(childObj, 0); node != nil {
+						roots = append(roots, node)
+					}
+				}
+			}
+			if len(roots) > 0 {
+				return roots
+			}
+		} else if childObj, ok := value.(map[string]interface{}); ok {
+			if node := e.extractTree(childObj, 0); node != nil {
+				return node
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetMaxDepth 设置最大递归深度
+func (e *TreeExtractor) SetMaxDepth(depth int) {
+	e.maxDepth = depth
+}
+
+// GetStats 获取抽取统计信息
+func (e *TreeExtractor) GetStats(data []byte) (map[string]interface{}, error) {
+	var rawData interface{}
+	if err := json.Unmarshal(data, &rawData); err != nil {
+		return nil, fmt.Errorf("JSON解析失败: %w", err)
+	}
+
+	stats := make(map[string]interface{})
+
+	switch v := rawData.(type) {
+	case map[string]interface{}:
+		stats["root_type"] = "object"
+		stats["root_keys"] = e.getObjectKeys(v)
+		e.collectStats(v, stats, "root")
+	case []interface{}:
+		stats["root_type"] = "array"
+		stats["array_length"] = len(v)
+		if len(v) > 0 {
+			if firstObj, ok := v[0].(map[string]interface{}); ok {
+				stats["first_item_keys"] = e.getObjectKeys(firstObj)
+			}
+		}
+	}
+
+	return stats, nil
+}
+
+// getObjectKeys 获取对象的所有键
+func (e *TreeExtractor) getObjectKeys(obj map[string]interface{}) []string {
+	var keys []string
+	for key := range obj {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
+// collectStats 递归收集统计信息
+func (e *TreeExtractor) collectStats(obj map[string]interface{}, stats map[string]interface{}, path string) {
+	title := e.findTitle(obj)
+	children := e.findChildren(obj)
+
+	if title != "" {
+		stats[path+"_has_title"] = true
+	}
+
+	if len(children) > 0 {
+		stats[path+"_has_children"] = true
+		stats[path+"_children_count"] = len(children)
+
+		// 只检查前几个子节点的统计信息，避免过深
+		maxCheck := min(3, len(children))
+		for i := 0; i < maxCheck; i++ {
+			if childObj, ok := children[i].(map[string]interface{}); ok {
+				childPath := fmt.Sprintf("%s.child_%d", path, i)
+				e.collectStats(childObj, stats, childPath)
+			}
+		}
+	}
+}
+
+// min 返回两个整数中的较小值
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// parseTestCaseMindNode 递归解析TestCaseMind节点，支持任意层级
+func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, depth int) *SimplifiedNode {
+	// 防止无限递归
+	if depth > e.maxDepth {
+		if e.verbose {
+			fmt.Printf("警告: 达到最大递归深度 %d，停止递归\n", e.maxDepth)
+		}
+		return nil
+	}
+
+	// 提取当前节点的数据
+	currentData, ok := nodeData["data"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	// 提取节点标题，优先从richText获取
+	var titleText string
+
+	// 优先从richText中提取标题
+	if richTextArray, exists := currentData["richText"]; exists {
+		if richTextItems, ok := richTextArray.([]interface{}); ok {
+			for _, item := range richTextItems {
+				if richTextObj, ok := item.(map[string]interface{}); ok {
+					if textVal, textExists := richTextObj["text"]; textExists {
+						if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+							titleText = textStr
+							break // 使用第一个找到的业务文本
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 如果richText中没有找到合适的标题，使用text字段
+	if titleText == "" {
+		if textVal, ok := currentData["text"].(string); ok && textVal != "" && e.isBusinessText(textVal) {
+			titleText = textVal
+		}
+	}
+
+	// 如果还是没有找到标题，跳过这个节点
+	if titleText == "" {
+		return nil
+	}
+
+	// 创建当前节点
+	simpleNode := &SimplifiedNode{
+		CaseTitle: titleText,
+		Children:  []*SimplifiedNode{},
+	}
+
+	// 递归处理子节点
+	childrenData, exists := nodeData["children"]
+	if !exists {
+		return simpleNode
+	}
+
+	childrenArray, ok := childrenData.([]interface{})
+	if !ok || len(childrenArray) == 0 {
+		return simpleNode
+	}
+
+	// 处理每个子节点
+	for _, child := range childrenArray {
+		childMap, ok := child.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		childNode := e.parseTestCaseMindNode(childMap, depth+1)
+		if childNode != nil {
+			simpleNode.Children = append(simpleNode.Children, childNode)
+		}
+	}
+
+	return simpleNode
+}
+
+// calculateTreeDepth 计算树的最大深度
+func (e *TreeExtractor) calculateTreeDepth(node *SimplifiedNode) int {
+	if node == nil {
+		return 0
+	}
+
+	if len(node.Children) == 0 {
+		return 1
+	}
+
+	maxChildDepth := 0
+	for _, child := range node.Children {
+		childDepth := e.calculateTreeDepth(child)
+		if childDepth > maxChildDepth {
+			maxChildDepth = childDepth
+		}
+	}
+
+	return 1 + maxChildDepth
+}

@@ -1,0 +1,45 @@
+从命令行参数读取cURL命令
+执行HTTP请求: POST https://bytest.bytedance.net/caseApi/getCaseDetail
+=== DEBUG: Headers Count: 20 ===
+Header: sec-ch-ua-mobile: ?0
+Header: service: CaseService
+  ⭐ 关键业务Header: service = CaseService
+Header: sec-fetch-dest: empty
+Header: priority: u=1, i
+Header: accept-language: zh
+Header: sec-ch-ua-platform: \
+Header: content-type: application/json
+Header: sec-fetch-mode: cors
+Header: x-trigger-source: onesite
+  ⭐ 关键业务Header: x-trigger-source = onesite
+Header: x-onesite-space-id: 1500005378
+  ⭐ 关键业务Header: x-onesite-space-id = 1500005378
+Header: accept: application/json, text/plain, */*
+Header: sec-fetch-site: same-site
+Header: user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+Header: origin: https://bits.bytedance.net
+Header: servicefunc: GetTestCase
+  ⭐ 关键业务Header: servicefunc = GetTestCase
+Header: sec-ch-ua: \
+Header: projectid: 2020093407
+  ⭐ 关键业务Header: projectid = 2020093407
+Header: referer: https://bits.bytedance.net/
+Header: Host: bytest.bytedance.net
+Header: x-jwt-token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYWFzLnBhc3Nwb3J0LmF1dGgiLCJleHAiOjE3NjU1MzQ1NzcsImlhdCI6MTc2NTUzMDkxNywidXNlcm5hbWUiOiJkb25naGUua2lsb3YiLCJ0eXBlIjoicGVyc29uX2FjY291bnQiLCJyZWdpb24iOiJjbiIsInRydXN0ZWQiOnRydWUsInV1aWQiOiJiMDY5MjM4Ny01OTNlLTRlMTctODQyYy05NDc0OWZjYzk4NzkiLCJzaXRlIjoibG9jYWwiLCJieXRlY2xvdWRfdGVuYW50X2lkIjoiYnl0ZWRhbmNlIiwiYnl0ZWNsb3VkX3RlbmFudF9pZF9vcmciOiJieXRlZGFuY2UiLCJzY29wZSI6ImJ5dGVkYW5jZSIsInNlcXVlbmNlIjoiVGVzdCIsIm9yZ2FuaXphdGlvbiI6IuS6p-WTgeeglOWPkeWSjOW3peeoi-aetuaehC3kuK3lm73kuqTmmJPkuI7lub_lkYot55Sf5rS75pyN5Yqh6LSo6YeP5L-d6ZqcLei0qOmHj-aetuaehCIsIndvcmtfY291bnRyeSI6IkNITiIsImxvY2F0aW9uIjoiQ04iLCJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9zMS1pbWZpbGUuZmVpc2h1Y2RuLmNvbS9zdGF0aWMtcmVzb3VyY2UvdjEvdjNfMDBxal81ZDRkZjU1ZC0yOTYyLTRiMmUtYmU1Zi04YzgzYzNiYzA4NWd-P2ltYWdlX3NpemU9bm9vcFx1MDAyNmN1dF90eXBlPVx1MDAyNnF1YWxpdHk9XHUwMDI2Zm9ybWF0PXBuZ1x1MDAyNnN0aWNrZXJfZm9ybWF0PS53ZWJwIiwiZW1haWwiOiJkb25naGUua2lsb0ZAYnl0ZWRhbmNlLmNvbSIsImVtcGxveWVlX2lkIjo5NTY1MDc4LCJuZXdfZW1wbG95ZWVfaWQiOjk1NjUwNzh9.Dw7fSBI6ZZDGwJzp6BvFcV_qQwFSmgaIBBtIgkjHIW7ieyeVROmCaP8tcdLuXM0lg5JoEd1nHivMLiCqOyTOKSe_2Xl2XGCu5FWNorx7zuz7fLfH9oVgLk-_pNjsrMWMvYWA1XMnBst1GPg0AaE3cz7NDIvvM4pZi0OpKe4orOA
+Body: {"ProductId":2020093407,"TestCaseId":11908032,"Operator":"donghe.kilov"}
+Body Length: 72 bytes
+✅ Body format: Valid JSON start
+开始发送请求...
+收到响应，状态码: 401 401 Unauthorized
+警告: 服务器返回非2xx状态码: 401 401 Unauthorized
+响应体长度: 59 字节
+响应体预览: {"errCode":40,"message":"Auth ERROR : Jwt validate failed"}
+成功读取响应体，大小: 59 字节
+开始校验响应，响应体大小: 59 字节
+响应体前100字符: {"errCode":40,"message":"Auth ERROR : Jwt validate failed"}
+响应校验通过，格式为有效的JSON
+开始抽取树状结构，标题候选键: [case_title title name label], 子节点候选键: [children nodes sub_cases items data]
+强制使用业务文本提取模式...
+创建默认树状结构...
+树状结构抽取完成
+成功将结果写入文件: debug_result.json
