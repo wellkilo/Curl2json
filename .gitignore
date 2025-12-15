@@ -1,0 +1,14 @@
+# Ignore claude files
+.claude
+
+# Ignore docs directory
+docs/
+
+# Ignore other unnecessary files
+result.json
+usecase_hierarchy.json
+debug.log
+*.backup
+
+# Ignore OS X temporary files
+.DS_Store

@@ -176,7 +176,9 @@ func (e *TreeExtractor) isBusinessText(text string) bool {
 		// 改进的人名检测 - 包含更多业务关键词
 		businessKeywords := []string{"测试", "优化", "性能", "场景", "验证", "回归",
 			"组", "实验", "对照", "逻辑", "方案", "功能", "页面", "模块", "流程",
-			"门店", "搜索", "输入", "结果", "包含", "客户", "详情", "列表", "数据", "扫码", "核销"}
+			"门店", "搜索", "输入", "结果", "包含", "客户", "详情", "列表", "数据", "扫码", "核销",
+			"资产", "中心", "商家", "产品", "实时", "订单", "指标", "展示", "排序", "筛选",
+			"从高", "从低", "由远", "由近", "到大", "到小", "默认", "不可", "操作", "高到低", "低到高", "远到近", "近到远"}
 		isBusiness := false
 		for _, keyword := range businessKeywords {
 			if strings.Contains(text, keyword) {
@@ -459,6 +461,7 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 						if e.verbose {
 							fmt.Printf("返回 %d 个有效根节点的数组\n", len(validNodes))
 						}
+						// 返回数组格式，与预期结果一致
 						return validNodes
 					}
 
@@ -468,11 +471,14 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 				}
 			}
 		} else {
-			// 成功解析出根节点
+			// 成功解析出根节点，检查是否需要转换为数组格式
 			if e.verbose {
 				fmt.Printf("检测到标准单根结构，根节点: %s\n", rootNode.Name)
 			}
-			return rootNode
+
+			// 根据预期结果，将单根节点也包装成数组格式
+			// 这样保持输出格式的一致性
+			return []*SimplifiedNode{rootNode}
 		}
 	}
 
@@ -527,6 +533,9 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 				return e.parseMultiRootNode(childrenArray, 0)
 			}
 		}
+	} else {
+		// 如果成功解析出根节点，将其包装为数组格式
+		return []*SimplifiedNode{result}
 	}
 
 	return result
@@ -557,7 +566,7 @@ func (e *TreeExtractor) isGoodRootNode(node *SimplifiedNode) bool {
 
 	// 检查是否包含过多的技术词汇
 	technicalPatterns := []string{
-		"数据", "接口", "系统", "平台", "中心", "实时", "扫码", "验证", "测试",
+		"接口", "系统", "平台", "验证", "测试",  // 移除了可能在业务标题中出现的词汇
 		"API", "HTTP", "JSON", "XML", "SQL", "UI", "UX", "QA", "CI", "CD",
 	}
 
@@ -646,7 +655,7 @@ func (e *TreeExtractor) selectBestRootNode(candidates []*SimplifiedNode) *Simpli
 		}
 
 		// 评分标准3: 避免技术词汇
-		technicalWords := []string{"数据", "系统", "平台", "中心", "实时", "扫码", "接口"}
+		technicalWords := []string{"系统", "平台", "接口", "验证", "测试"}  // 移除了业务相关的词汇
 		technicalCount := 0
 		for _, word := range technicalWords {
 			if strings.Contains(candidate.Name, word) {
@@ -1318,7 +1327,8 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 			}
 			// 对于根节点，如果text为空但有children，不直接返回nil
 			if textVal != "" {
-				if e.isBusinessText(textVal) {
+				// 放宽业务文本判断，特别是对于常见的业务界面元素
+				if e.isBusinessText(textVal) || e.isUIBusinessText(textVal, depth) {
 					titleText = textVal
 					if e.verbose {
 						fmt.Printf("%s使用text字段作为标题: '%s'\n", strings.Repeat("  ", depth), titleText)
@@ -1340,7 +1350,29 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 					if e.verbose {
 						fmt.Printf("%s根节点无标题但有子节点，解析为多根结构\n", strings.Repeat("  ", depth))
 					}
-					// 直接返回nil，让调用者处理多根结构
+					// 继续解析子节点，让调用者处理多根结构，但不直接返回nil
+					// 先尝试解析所有子节点，看看能否找到有效的根节点候选
+					var validNodes []*SimplifiedNode
+					for _, child := range childrenArray {
+						if childMap, ok := child.(map[string]interface{}); ok {
+							if childNode := e.parseTestCaseMindNode(childMap, depth+1); childNode != nil {
+								validNodes = append(validNodes, childNode)
+							}
+						}
+					}
+
+					// 如果找到了有效的子节点，选择最佳的一个作为根节点
+					if len(validNodes) > 0 {
+						bestNode := e.selectBestBusinessRootNode(validNodes)
+						if bestNode != nil {
+							if e.verbose {
+								fmt.Printf("%s从子节点中选择最佳根节点: '%s'\n", strings.Repeat("  ", depth), bestNode.Name)
+							}
+							return bestNode
+						}
+					}
+
+					// 如果没有找到合适的子节点，则返回nil让调用者处理多根结构
 					return nil
 				} else {
 					// 非根节点，使用默认标题
@@ -1487,8 +1519,8 @@ func (e *TreeExtractor) selectBestBusinessRootNode(nodes []*SimplifiedNode) *Sim
 			}
 		}
 
-		// 评分标准2: 避免选择包含"数据资产"、"实时"等技术性描述的节点
-		avoidKeywords := []string{"数据资产", "实时", "扫码", "数据", "中心"}
+		// 评分标准2: 避免选择包含"接口"、"系统"等技术性描述的节点
+		avoidKeywords := []string{"接口", "系统", "平台", "验证", "测试"}  // 移除了业务相关的词汇
 		for _, keyword := range avoidKeywords {
 			if strings.Contains(nodeName, keyword) {
 				score -= 50
@@ -1623,6 +1655,41 @@ func (e *TreeExtractor) printJSONStructure(data interface{}, indent int) {
 	default:
 		fmt.Printf("%s%v\n", prefix, v)
 	}
+}
+
+// isUIBusinessText 专门判断是否为UI业务文本
+func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
+	if text == "" {
+		return false
+	}
+
+	// 常见的UI业务元素
+	uiBusinessElements := []string{
+		"APP端", "PC端", "Web端", "移动端", "桌面端",
+		"接口验证", "筛选", "排序", "搜索", "列表", "详情",
+		"展示", "页面", "界面", "菜单", "按钮", "选项",
+		"指标", "数据", "统计", "报表", "图表",
+		"功能", "模块", "组件", "流程",
+	}
+
+	for _, element := range uiBusinessElements {
+		if strings.Contains(text, element) {
+			return true
+		}
+	}
+
+	// 对于特定的组合词汇，也认为是业务文本
+	if strings.Contains(text, "&") || strings.Contains(text, "端") {
+		// 检查是否包含其他业务关键词
+		businessKeywords := []string{"客户", "门店", "订单", "商品", "用户", "数据", "接口"}
+		for _, keyword := range businessKeywords {
+			if strings.Contains(text, keyword) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // max 返回两个整数中的较大值
