@@ -1,789 +1,766 @@
 [
   {
-    "name": "客户详情-门店列表",
-    "children": [
-      {
-        "name": "门店搜索",
-        "children": [
-          {
-            "name": "输入存在的门店名称",
-            "children": [
-              {
-                "name": "搜索结果包含该门店",
-                "children": []
-              }
-            ]
-          },
-          {
-            "name": "输入部分门店名称",
-            "children": [
-              {
-                "name": "搜索结果包含名称匹配的门店",
-                "children": []
-              }
-            ]
-          },
-          {
-            "name": "输入不存在的门店名称",
-            "children": [
-              {
-                "name": "搜索结果无匹配门店",
-                "children": []
-              }
-            ]
-          },
-          {
-            "name": "搜索框调用接口",
-            "children": [
-              {
-                "name": "仅调用门店查询接口",
-                "children": []
-              },
-              {
-                "name": "不调用协议接口",
-                "children": []
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "指标展示",
-        "children": [
-          {
-            "name": "选择【本月核销】",
-            "children": [
-              {
-                "name": "指标",
-                "children": [
-                  {
-                    "name": "本月核销GMV",
-                    "children": []
-                  },
-                  {
-                    "name": "昨日动销/在售商品",
-                    "children": []
-                  },
-                  {
-                    "name": "评价数",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "选择【本月线下】",
-            "children": [
-              {
-                "name": "指标",
-                "children": [
-                  {
-                    "name": "本月线下核销GMV",
-                    "children": []
-                  },
-                  {
-                    "name": "本月线下核销订单数",
-                    "children": []
-                  },
-                  {
-                    "name": "本月线下核销GMV占比",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "选择【今日线下】",
-            "children": [
-              {
-                "name": "指标",
-                "children": [
-                  {
-                    "name": "今日线下核销GMV",
-                    "children": []
-                  },
-                  {
-                    "name": "今日线下核销订单数",
-                    "children": []
-                  },
-                  {
-                    "name": "今日线下核销GMV占比",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "其他筛选条件",
-            "children": [
-              {
-                "name": "置灰",
-                "children": []
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "本月核销排序",
-        "children": [
-          {
-            "name": "本月核销GMV排序",
-            "children": [
-              {
-                "name": "从高到低",
-                "children": [
-                  {
-                    "name": "列表门店按本月核销GMV从高到低排列",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "从低到高",
-                "children": [
-                  {
-                    "name": "列表门店按本月核销GMV从低到高排列",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "门店距离排序",
-            "children": [
-              {
-                "name": "由远到近",
-                "children": [
-                  {
-                    "name": "列表门店按距离由远到近排列",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "由近到远",
-                "children": [
-                  {
-                    "name": "列表门店按距离由近到远排列",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "默认按此排序",
-                "children": []
-              }
-            ]
-          },
-          {
-            "name": "门店经营分排序",
-            "children": [
-              {
-                "name": "由大到小",
-                "children": [
-                  {
-                    "name": "列表门店按经营分由大到小排列",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "由小到大",
-                "children": [
-                  {
-                    "name": "列表门店按经营分由小到大排列",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "本月线下排序",
-        "children": [
-          {
-            "name": "本月线下核销GMV排序",
-            "children": [
-              {
-                "name": "从高到低",
-                "children": [
-                  {
-                    "name": "列表按本月线下核销GMV从高到低排序",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "从低到高",
-                "children": [
-                  {
-                    "name": "列表按本月线下核销GMV从低到高排序",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "本月扫码动销天数排序",
-            "children": [
-              {
-                "name": "从高到低",
-                "children": [
-                  {
-                    "name": "列表按本月扫码动销天数从高到低排序",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "从低到高",
-                "children": [
-                  {
-                    "name": "列表按本月扫码动销天数从低到高排序",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "门店距离排序",
-            "children": [
-              {
-                "name": "由远到近",
-                "children": [
-                  {
-                    "name": "列表按门店距离由远到近排序",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "由近到远",
-                "children": [
-                  {
-                    "name": "列表按门店距离由近到远排序",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "门店经营分排序",
-            "children": [
-              {
-                "name": "由大到小",
-                "children": [
-                  {
-                    "name": "列表按门店经营分由大到小排序",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "由小到大",
-                "children": [
-                  {
-                    "name": "列表按门店经营分由小到大排序",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "其他筛选条件置灰",
-            "children": [
-              {
-                "name": "距离筛选条件",
-                "children": [
-                  {
-                    "name": "不可操作",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "经营分筛选条件",
-                "children": [
-                  {
-                    "name": "不可操作",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "今日线下排序与交互",
-        "children": [
-          {
-            "name": "指标展示",
-            "children": [
-              {
-                "name": "今日线下核销GMV",
-                "children": [
-                  {
-                    "name": "展示实时数据",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "今日线下核销订单数",
-                "children": [
-                  {
-                    "name": "展示实时数据",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "今日线下核销GMV占比",
-                "children": [
-                  {
-                    "name": "展示实时数据",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "选择【今日线下】",
-            "children": [
-              {
-                "name": "排序选项",
-                "children": [
-                  {
-                    "name": "今日线下核销GMV",
-                    "children": [
-                      {
-                        "name": "从高到低",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销GMV从高到低排序",
-                            "children": []
-                          }
-                        ]
-                      },
-                      {
-                        "name": "从低到高",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销GMV从低到高排序",
-                            "children": []
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "name": "今日线下核销订单数",
-                    "children": [
-                      {
-                        "name": "从高到低",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销订单数从高到低排序",
-                            "children": []
-                          }
-                        ]
-                      },
-                      {
-                        "name": "从低到高",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销订单数从低到高排序",
-                            "children": []
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "name": "今日线下核销GMV占比",
-                    "children": [
-                      {
-                        "name": "从高到低",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销GMV占比从高到低排序",
-                            "children": []
-                          }
-                        ]
-                      },
-                      {
-                        "name": "从低到高",
-                        "children": [
-                          {
-                            "name": "列表按今日线下核销GMV占比从低到高排序",
-                            "children": []
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "排序功能",
-                "children": [
-                  {
-                    "name": "选择今日线下核销GMV从高到低",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "选择今日线下核销GMV从低到高",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "选择今日线下核销订单数从高到低",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销订单数从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "选择今日线下核销订单数从低到高",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销订单数从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "选择今日线下核销GMV占比从高到低",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销GMV占比从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "选择今日线下核销GMV占比从低到高",
-                    "children": [
-                      {
-                        "name": "列表按今日线下核销GMV占比从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "排序字段orderinfo@fieldName",
-                "children": [
-                  {
-                    "name": "包含todayPoiOffline ScanVerifyGmv",
-                    "children": []
-                  },
-                  {
-                    "name": "包含todayPoiOffline ScanVerifyOrderCnt",
-                    "children": []
-                  },
-                  {
-                    "name": "包含todayPoiVerifyGmv",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "传入排序字段及方向",
-                "children": [
-                  {
-                    "name": "fieldName-todayPoiOffline ScanVerifyGmv, direction=desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销订单数从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销订单数从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName-todayPoiVerifyGmv, direction-desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiVerifyGmv, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "接口验证",
-        "children": [
-          {
-            "name": "调用/api/customer/v1/business/store_group/store/list接口",
-            "children": [
-              {
-                "name": "传入排序字段及方向",
-                "children": [
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销订单数从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日线下核销订单数从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiVerifyGmv, direction=desc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "fieldName=todayPoiVerifyGmv, direction=asc",
-                    "children": [
-                      {
-                        "name": "接口返回的门店列表按今日核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "筛选与排序",
-        "children": [
-          {
-            "name": "PC端",
-            "children": [
-              {
-                "name": "今日线下核销GMV",
-                "children": [
-                  {
-                    "name": "从高到低",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销GMV从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "从低到高",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销GMV从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "今日线下核销订单数",
-                "children": [
-                  {
-                    "name": "从高到低",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销订单数从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "从低到高",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销订单数从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "name": "今日线下核销GMV占比",
-                "children": [
-                  {
-                    "name": "从高到低",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销GMV占比从高到低排序",
-                        "children": []
-                      }
-                    ]
-                  },
-                  {
-                    "name": "从低到高",
-                    "children": [
-                      {
-                        "name": "列表数据按今日线下核销GMV占比从低到高排序",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "APP端&PC",
-            "children": [
-              {
-                "name": "排序字段orderinfo@fieldName",
-                "children": [
-                  {
-                    "name": "包含todayPoiOffline ScanVerifyGmv",
-                    "children": []
-                  },
-                  {
-                    "name": "包含todayPoiOffline ScanVerifyOrderCnt",
-                    "children": []
-                  },
-                  {
-                    "name": "包含todayPoiVerifyGmv",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
     "name": "客户数据资产中心-门店实时扫码数据",
     "children": [
       {
         "name": "【商家产品】客户数据资产中心-门店实时扫码数据",
-        "children": []
-      }
-    ]
-  },
-  {
-    "name": "门店详情-数据",
-    "children": [
-      {
-        "name": "统计周期",
         "children": [
           {
-            "name": "新增【今日】统计周期选项",
-            "children": []
+            "name": "客户详情-门店列表",
+            "children": [
+              {
+                "name": "门店搜索",
+                "children": [
+                  {
+                    "name": "输入存在的门店名称",
+                    "children": [
+                      {
+                        "name": "搜索结果包含该门店",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "输入部分门店名称",
+                    "children": [
+                      {
+                        "name": "搜索结果包含名称匹配的门店",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "输入不存在的门店名称",
+                    "children": [
+                      {
+                        "name": "搜索结果无匹配门店",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "搜索框调用接口",
+                    "children": [
+                      {
+                        "name": "仅调用门店查询接口",
+                        "children": []
+                      },
+                      {
+                        "name": "不调用协议接口",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "指标展示",
+                "children": [
+                  {
+                    "name": "选择【本月核销】",
+                    "children": [
+                      {
+                        "name": "指标",
+                        "children": [
+                          {
+                            "name": "本月核销GMV",
+                            "children": []
+                          },
+                          {
+                            "name": "昨日动销/在售商品",
+                            "children": []
+                          },
+                          {
+                            "name": "评价数",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "选择【本月线下】",
+                    "children": [
+                      {
+                        "name": "指标",
+                        "children": [
+                          {
+                            "name": "本月线下核销GMV",
+                            "children": []
+                          },
+                          {
+                            "name": "本月线下核销订单数",
+                            "children": []
+                          },
+                          {
+                            "name": "本月线下核销GMV占比",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "选择【今日线下】",
+                    "children": [
+                      {
+                        "name": "指标",
+                        "children": [
+                          {
+                            "name": "今日线下核销GMV",
+                            "children": []
+                          },
+                          {
+                            "name": "今日线下核销订单数",
+                            "children": []
+                          },
+                          {
+                            "name": "今日线下核销GMV占比",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "其他筛选条件",
+                    "children": [
+                      {
+                        "name": "置灰",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "本月核销排序",
+                "children": [
+                  {
+                    "name": "本月核销GMV排序",
+                    "children": [
+                      {
+                        "name": "从高到低",
+                        "children": [
+                          {
+                            "name": "列表门店按本月核销GMV从高到低排列",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "从低到高",
+                        "children": [
+                          {
+                            "name": "列表门店按本月核销GMV从低到高排列",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "门店距离排序",
+                    "children": [
+                      {
+                        "name": "由远到近",
+                        "children": [
+                          {
+                            "name": "列表门店按距离由远到近排列",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "由近到远",
+                        "children": [
+                          {
+                            "name": "列表门店按距离由近到远排列",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "默认按此排序",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "门店经营分排序",
+                    "children": [
+                      {
+                        "name": "由大到小",
+                        "children": [
+                          {
+                            "name": "列表门店按经营分由大到小排列",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "由小到大",
+                        "children": [
+                          {
+                            "name": "列表门店按经营分由小到大排列",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "本月线下排序",
+                "children": [
+                  {
+                    "name": "本月线下核销GMV排序",
+                    "children": [
+                      {
+                        "name": "从高到低",
+                        "children": [
+                          {
+                            "name": "列表按本月线下核销GMV从高到低排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "从低到高",
+                        "children": [
+                          {
+                            "name": "列表按本月线下核销GMV从低到高排序",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "本月扫码动销天数排序",
+                    "children": [
+                      {
+                        "name": "从高到低",
+                        "children": [
+                          {
+                            "name": "列表按本月扫码动销天数从高到低排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "从低到高",
+                        "children": [
+                          {
+                            "name": "列表按本月扫码动销天数从低到高排序",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "门店距离排序",
+                    "children": [
+                      {
+                        "name": "由远到近",
+                        "children": [
+                          {
+                            "name": "列表按门店距离由远到近排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "由近到远",
+                        "children": [
+                          {
+                            "name": "列表按门店距离由近到远排序",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "门店经营分排序",
+                    "children": [
+                      {
+                        "name": "由大到小",
+                        "children": [
+                          {
+                            "name": "列表按门店经营分由大到小排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "由小到大",
+                        "children": [
+                          {
+                            "name": "列表按门店经营分由小到大排序",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "其他筛选条件置灰",
+                    "children": [
+                      {
+                        "name": "距离筛选条件",
+                        "children": [
+                          {
+                            "name": "不可操作",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "经营分筛选条件",
+                        "children": [
+                          {
+                            "name": "不可操作",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "今日线下排序与交互",
+                "children": [
+                  {
+                    "name": "指标展示",
+                    "children": [
+                      {
+                        "name": "今日线下核销GMV",
+                        "children": [
+                          {
+                            "name": "展示实时数据",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "今日线下核销订单数",
+                        "children": [
+                          {
+                            "name": "展示实时数据",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "今日线下核销GMV占比",
+                        "children": [
+                          {
+                            "name": "展示实时数据",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "选择【今日线下】",
+                    "children": [
+                      {
+                        "name": "排序选项",
+                        "children": [
+                          {
+                            "name": "今日线下核销GMV",
+                            "children": [
+                              {
+                                "name": "从高到低",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销GMV从高到低排序",
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "从低到高",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销GMV从低到高排序",
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "今日线下核销订单数",
+                            "children": [
+                              {
+                                "name": "从高到低",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销订单数从高到低排序",
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "从低到高",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销订单数从低到高排序",
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "name": "今日线下核销GMV占比",
+                            "children": [
+                              {
+                                "name": "从高到低",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销GMV占比从高到低排序",
+                                    "children": []
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "从低到高",
+                                "children": [
+                                  {
+                                    "name": "列表按今日线下核销GMV占比从低到高排序",
+                                    "children": []
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "排序功能",
+                        "children": [
+                          {
+                            "name": "选择今日线下核销GMV从高到低",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销GMV从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "选择今日线下核销GMV从低到高",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销GMV从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "选择今日线下核销订单数从高到低",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销订单数从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "选择今日线下核销订单数从低到高",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销订单数从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "选择今日线下核销GMV占比从高到低",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销GMV占比从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "选择今日线下核销GMV占比从低到高",
+                            "children": [
+                              {
+                                "name": "列表按今日线下核销GMV占比从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "排序字段orderinfo@fieldName",
+                        "children": [
+                          {
+                            "name": "包含todayPoiOffline ScanVerifyGmv",
+                            "children": []
+                          },
+                          {
+                            "name": "包含todayPoiOffline ScanVerifyOrderCnt",
+                            "children": []
+                          },
+                          {
+                            "name": "包含todayPoiVerifyGmv",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "传入排序字段及方向",
+                        "children": [
+                          {
+                            "name": "fieldName-todayPoiOffline ScanVerifyGmv, direction=desc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日线下核销GMV从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=asc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日线下核销GMV从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=desc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日线下核销订单数从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=asc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日线下核销订单数从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "fieldName-todayPoiVerifyGmv, direction-desc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日核销GMV从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "fieldName=todayPoiVerifyGmv, direction=asc",
+                            "children": [
+                              {
+                                "name": "接口返回的门店列表按今日核销GMV从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "接口验证",
+                "children": [
+                  {
+                    "name": "传入排序字段及方向",
+                    "children": [
+                      {
+                        "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=desc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日线下核销GMV从高到低排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "fieldName=todayPoiOfflineScanVerifyGmv, direction=asc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日线下核销GMV从低到高排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=desc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日线下核销订单数从高到低排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "fieldName=todayPoiOfflineScanVerifyOrderCnt, direction=asc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日线下核销订单数从低到高排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "fieldName=todayPoiVerifyGmv, direction=desc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日核销GMV从高到低排序",
+                            "children": []
+                          }
+                        ]
+                      },
+                      {
+                        "name": "fieldName=todayPoiVerifyGmv, direction=asc",
+                        "children": [
+                          {
+                            "name": "接口返回的门店列表按今日核销GMV从低到高排序",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "筛选与排序",
+                "children": [
+                  {
+                    "name": "PC端",
+                    "children": [
+                      {
+                        "name": "今日线下核销GMV",
+                        "children": [
+                          {
+                            "name": "从高到低",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销GMV从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "从低到高",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销GMV从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "今日线下核销订单数",
+                        "children": [
+                          {
+                            "name": "从高到低",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销订单数从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "从低到高",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销订单数从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "name": "今日线下核销GMV占比",
+                        "children": [
+                          {
+                            "name": "从高到低",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销GMV占比从高到低排序",
+                                "children": []
+                              }
+                            ]
+                          },
+                          {
+                            "name": "从低到高",
+                            "children": [
+                              {
+                                "name": "列表数据按今日线下核销GMV占比从低到高排序",
+                                "children": []
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "APP端&PC",
+                    "children": [
+                      {
+                        "name": "排序字段orderinfo@fieldName",
+                        "children": [
+                          {
+                            "name": "包含todayPoiOffline ScanVerifyGmv",
+                            "children": []
+                          },
+                          {
+                            "name": "包含todayPoiOffline ScanVerifyOrderCnt",
+                            "children": []
+                          },
+                          {
+                            "name": "包含todayPoiVerifyGmv",
+                            "children": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
           {
-            "name": "选择【今日】统计周期",
-            "children": []
-          }
-        ]
-      },
-      {
-        "name": "指标展示",
-        "children": [
-          {
-            "name": "线下交易指标",
+            "name": "门店详情-数据--此处指标如何核对？",
             "children": [
               {
                 "name": "今日线下核销GMV",
                 "children": [
                   {
                     "name": "展示实时标签",
+                    "children": []
+                  },
+                  {
+                    "name": "数据核对",
                     "children": []
                   }
                 ]
@@ -794,6 +771,10 @@
                   {
                     "name": "展示实时标签",
                     "children": []
+                  },
+                  {
+                    "name": "数据核对",
+                    "children": []
                   }
                 ]
               },
@@ -803,40 +784,9 @@
                   {
                     "name": "展示实时标签",
                     "children": []
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "接口验证",
-        "children": [
-          {
-            "name": "调用/api/customer/v1/business/store_group/get_store_analysis接口",
-            "children": [
-              {
-                "name": "统计周期为今日",
-                "children": []
-              },
-              {
-                "name": "返回结果包含metaData字段",
-                "children": [
-                  {
-                    "name": "todayOfflineScanVerifyGmv:今日线下核销GMV,金額",
-                    "children": []
                   },
                   {
-                    "name": "todayofflineScanVerifyOrderCnt: 今日线下核销订单数",
-                    "children": []
-                  },
-                  {
-                    "name": "todayVerifyGmv:今日核销GMV,金額",
-                    "children": []
-                  },
-                  {
-                    "name": "metaData字段返回的值为当日实时数据,与实际业务数据一致",
+                    "name": "数据核对",
                     "children": []
                   }
                 ]
