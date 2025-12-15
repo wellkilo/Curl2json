@@ -1712,6 +1712,44 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 		}
 	}
 
+	// 检查常见的业务动作和状态描述
+	businessActions := []string{"点击", "页面", "其他", "内容", "手动", "打开", "状态", "为准", "不影响", "当前", "开关", "状态", "配置", "tcc", "引导", "收起", "助手", "自动"}
+	for _, action := range businessActions {
+		if strings.Contains(text, action) {
+			if e.verbose {
+				fmt.Printf("识别业务动作文本: '%s' (包含关键词: '%s')\n", text, action)
+			}
+			return true
+		}
+	}
+
+	// 特殊���合检查：识别常见的UI交互动作
+	uiInteractions := []string{
+		"点击页面其他", "点击其他", "页面其他内容", "其他内容",
+		"手动打开", "打开状态", "开关状态", "tcc配置",
+		"AI助手", "助手引导", "引导收起", "自动收起",
+		"页面内容", "页面其他", "非按钮", "非输入框",
+	}
+	for _, interaction := range uiInteractions {
+		if strings.Contains(text, interaction) {
+			if e.verbose {
+				fmt.Printf("识别UI交互文本: '%s' (匹配模式: '%s')\n", text, interaction)
+			}
+			return true
+		}
+	}
+
+	// 检查是否为描述开关状态或配置相关的文本
+	if (strings.Contains(text, "为准") && strings.Contains(text, "不影响")) ||
+	   (strings.Contains(text, "手动") && strings.Contains(text, "状态")) ||
+	   (strings.Contains(text, "配置") && strings.Contains(text, "tcc")) ||
+	   (strings.Contains(text, "当前") && strings.Contains(text, "开关")) {
+		if e.verbose {
+			fmt.Printf("识别状态配置文本: '%s'\n", text)
+		}
+		return true
+	}
+
 	// 专门检查编号格式的业务文本
 	if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") || strings.HasPrefix(text, "3.") ||
 	   strings.HasPrefix(text, "4.") || strings.HasPrefix(text, "5.") || strings.HasPrefix(text, "6.") ||
