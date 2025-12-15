@@ -1,0 +1,22 @@
+curl 'https://bytest.bytedance.net/caseApi/getCaseDetail' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: zh' \
+  -H 'content-type: application/json' \
+  -b 'MONITOR_WEB_ID=aa45b1c2-026f-4720-8730-37d9e1a10822; ttwid=1%7CWSAu09t0HHr-5mxYGK5JSDM-T9M_6SFyELFBLCu4-UY%7C1760328312%7C707f2b999cb2a44a9d0440d710e7b39b905c8a88024fcfb8a88137f5367f0748; X-Risk-Browser-Id=ef7f1338888e1c11dee3783f503231232be960961a5a20fd8eaec5af9bead512; people-lang=zh; boe-sso-session=9aa7c3d86d1804df323bd4fd19c28000; x-lang=zh-CN; _tea_utm_cache_1508={%22utm_source%22:%22startup%22%2C%22utm_medium%22:%22chrome%22}; email=donghe.kilov@bytedance.com; user_token=JTdCJTIybmFtZSUyMiUzQSUyMiVFOCU5MSVBMyVFOCVCNSVBQiUyMiUyQyUyMmZ1bGxfbmFtZSUyMiUzQSUyMiVFOCU5MSVBMyVFOCVCNSVBQiUyMDk1NjUwNzglMjIlMkMlMjJlbWFpbCUyMiUzQSUyMmRvbmdoZS5raWxvdiU0MGJ5dGVkYW5jZS5jb20lMjIlMkMlMjJwaWN0dXJlJTIyJTNBJTIyaHR0cHMlM0ElMkYlMkZzMy1pbWZpbGUuZmVpc2h1Y2RuLmNvbSUyRnN0YXRpYy1yZXNvdXJjZSUyRnYxJTJGdjNfMDBxal81ZDRkZjU1ZC0yOTYyLTRiMmUtYmU1Zi04YzgzYzNiYzA4NWd+JTNGaW1hZ2Vfc2l6ZSUzRDI0MHgyNDAlMjZjdXRfdHlwZSUzRCUyNnF1YWxpdHklM0QlMjZmb3JtYXQlM0RwbmclMjZzdGlja2VyX2Zvcm1hdCUzRC53ZWJwJTIyJTJDJTIyZW1wbG95ZWVfaWQlMjIlM0ElMjI5NTY1MDc4JTIyJTJDJTIyZW1wbG95ZWVfbnVtYmVyJTIyJTNBJTIyOTU2NTA3OCUyMiUyQyUyMnRlbmFudF9hbGlhcyUyMiUzQSUyMmJ5dGVkYW5jZSUyMiUyQyUyMnVzZXJfaWQlMjIlM0ElMjJ5ZDFsZWdyMzRyZXA1Mzg3Z2x5ciUyMiU3RA==; PHPSESSID=00JH5BBZN4RTWNBQXBJTLWNUY4TUJAAEGQTMNP4Z5QTS3JKERQUMWQ48c86e7dc3654c828c95e20eec83c0893b54af1e93a947a99faebbb47ad78757789997f902c614424ec799675a4c8b12ea9e1588a1d98f090a9374320fd40a2c9d76bc1e44f809edfb2a160a70389f1299f5970922e1af5751607a13ab6646bcc8b0e4aea48660eba62e5c37da5f932a15aa6142bdf8df85f3f9c247c51f9def89c59d2eb860a831d9a2234d9d4a811384; ecom_ecop_sso_access_token=9c516cc2fefc65e05efef7e763c853f20beff381; ecop_sso_access_token=9c516cc2fefc65e05efef7e763c853f20beff381; titan_passport_id=cn/bytedance/660ca022-3712-4c4e-96cf-06d3c217dd77; bd_sso_3b6da9=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjYzOTczMjAsImlhdCI6MTc2NTc5MjUyMCwiaXNzIjoic3NvLmJ5dGVkYW5jZS5jb20iLCJzdWIiOiJ5ZDFsZWdyMzRyZXA1Mzg3Z2x5ciIsInRlbmFudF9pZCI6ImhncTN0Y2NwM2kxc2pqbjU4emlrIn0.d96xK93CH2Ylk2CoRoAdbD2wnuOhCXUbhF-QOImdyMwzTBSBXD9RS9GLKcW-Rvo3eYwuDl01nJcYBQkalEHYAESbrsTplk2IFnpzgBWg4T2QjJQC_Ym5fJedXJqiXx6PB1EbZ9JbObCMzP_HrfAQLPAvutPqFzEqkuN-PmDF60yu8RgE4mugdYDH3aATboXwkfjzDm9y-IpxLwd1Agz6OwVrM_WV4vZkI1_BAdqPpGaKQUknQVHos2NgFkb5BoCtqWzWe4WSaVeuYmoWZO_O6MwwPpLSj5yo6Lbj37tvoe-2NhLcWaq6tbbVIptkZ1mqDI50QtbyviLgxq-xTBzGFA' \
+  -H 'origin: https://bits.bytedance.net' \
+  -H 'priority: u=1, i' \
+  -H 'projectid: 2020093407' \
+  -H 'referer: https://bits.bytedance.net/' \
+  -H 'sec-ch-ua: "Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'service: CaseService' \
+  -H 'servicefunc: GetTestCase' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36' \
+  -H 'x-jwt-token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYWFzLnBhc3Nwb3J0LmF1dGgiLCJleHAiOjE3NjU4MDIxMDcsImlhdCI6MTc2NTc5ODQ0NywidXNlcm5hbWUiOiJkb25naGUua2lsb3YiLCJ0eXBlIjoicGVyc29uX2FjY291bnQiLCJyZWdpb24iOiJjbiIsInRydXN0ZWQiOnRydWUsInV1aWQiOiI1ZTVkYzVmZS1kYTg3LTQ5N2UtYTU2Ni0xNDgzYjRlZGUzN2UiLCJzaXRlIjoibG9jYWwiLCJieXRlY2xvdWRfdGVuYW50X2lkIjoiYnl0ZWRhbmNlIiwiYnl0ZWNsb3VkX3RlbmFudF9pZF9vcmciOiJieXRlZGFuY2UiLCJzY29wZSI6ImJ5dGVkYW5jZSIsInNlcXVlbmNlIjoiVGVzdCIsIm9yZ2FuaXphdGlvbiI6IuS6p-WTgeeglOWPkeWSjOW3peeoi-aetuaehC3kuK3lm73kuqTmmJPkuI7lub_lkYot55Sf5rS75pyN5Yqh6LSo6YeP5L-d6ZqcLei0qOmHj-aetuaehCIsIndvcmtfY291bnRyeSI6IkNITiIsImxvY2F0aW9uIjoiQ04iLCJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9zMS1pbWZpbGUuZmVpc2h1Y2RuLmNvbS9zdGF0aWMtcmVzb3VyY2UvdjEvdjNfMDBxal81ZDRkZjU1ZC0yOTYyLTRiMmUtYmU1Zi04YzgzYzNiYzA4NWd-P2ltYWdlX3NpemU9bm9vcFx1MDAyNmN1dF90eXBlPVx1MDAyNnF1YWxpdHk9XHUwMDI2Zm9ybWF0PXBuZ1x1MDAyNnN0aWNrZXJfZm9ybWF0PS53ZWJwIiwiZW1haWwiOiJkb25naGUua2lsb3ZAYnl0ZWRhbmNlLmNvbSIsImVtcGxveWVlX2lkIjo5NTY1MDc4LCJuZXdfZW1wbG95ZWVfaWQiOjk1NjUwNzh9.cJvRBH9oJcXA8oXOWsZpTkXohY16zIV_3HCOBAt8E6yIe3m1Mqj2yVKhQzWDYNYhmwJVyNfHBVZM7BL4oNJP9Lr7QeUjPtUjOlcfjOD-JDPI2xRF2bpsTASoBUEHQAqgvtWSVvUljB0ieY_qBwut8bQr_VRrlidyI9fVrOtxmT8' \
+  -H 'x-onesite-space-id: 1500005378' \
+  -H 'x-trigger-source: onesite' \
+  --data-raw '{"ProductId":2020093407,"TestCaseId":11052476,"Operator":"donghe.kilov"}'

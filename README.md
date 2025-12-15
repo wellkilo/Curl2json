@@ -40,20 +40,42 @@ sudo mv caseurl2md /usr/local/bin/
 
 ## 使用方法
 
-### 1. 直接使用cURL命令
+### 1. 🆕 F12浏览器开发者工具支持（推荐）
+
+直接粘贴完整的F12 curl命令，无需手动分离参数：
+
+```bash
+./caseurl2md --raw-curl 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
+  -H "accept: application/json, text/plain, */*" \
+  -H "content-type: application/json" \
+  -H "x-jwt-token: YOUR_JWT_TOKEN" \
+  -H "projectid: 2020093407" \
+  -H "service: CaseService" \
+  -H "servicefunc: GetTestCase" \
+  --data-raw '{"ProductId":2020093407,"TestCaseId":11052476,"Operator":"username"}' \
+  -b "session_id=abc123; user_id=456"'
+```
+
+### 2. 🆕 从文件读取F12格式curl
+
+```bash
+# 将F12中的完整curl命令保存到文件
+echo 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
+  -H "accept: application/json, text/plain, */*" \
+  -H "content-type: application/json" \
+  --data-raw "{\"key\":\"value\"}' > curl_command.txt
+
+# 直接处理文件中的curl命令
+./caseurl2md --curl-file curl_command.txt --out result.json
+```
+
+### 3. 传统cURL命令格式
 
 ```bash
 ./caseurl2md --from-curl 'curl "http://api.example.com/data" -H "Authorization: Bearer token"'
 ```
 
-### 2. 从文件读取cURL
-
-```bash
-echo 'curl "http://api.example.com/data" -H "Authorization: Bearer token"' > curl.txt
-./caseurl2md --curl-file curl.txt --out result.json
-```
-
-### 3. 手动指定参数
+### 4. 手动指定参数
 
 ```bash
 ./caseurl2md --url "http://api.example.com/data" \
@@ -62,7 +84,7 @@ echo 'curl "http://api.example.com/data" -H "Authorization: Bearer token"' > cur
              --method GET
 ```
 
-### 4. 从stdin读取
+### 5. 从stdin读取
 
 ```bash
 echo 'curl "http://api.example.com/data"' | ./caseurl2md
@@ -72,17 +94,50 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 
 | 参数 | 描述 | 默认值 |
 |------|------|--------|
+| `--raw-curl` | 🆕 接收完整的cURL命令字符串（支持多行格式，F12浏览器开发者工具格式） | - |
 | `--from-curl` | 直接从命令行接收cURL命令 | - |
 | `--curl-file` | 从文件读取cURL命令 | - |
 | `--url` | 请求URL（不使用cURL时必需） | - |
 | `--method` | 请求方法 | `GET` |
 | `--header` | 请求头，格式为'Key: Value'，可多次使用 | - |
 | `--data` | 请求体数据 | - |
+| `--cookies` | 🆕 cookies字符串，格式为'key1=value1; key2=value2' | - |
 | `--out` | 输出文件路径（默认为output_{timestamp}.json） | - |
 | `--title-key` | 节点内容字段候选键名，按优先级排序 | `[case_title,title,name,label]` |
 | `--children-keys` | 子节点数组候选键名，按优先级排序 | `[children,nodes,sub_cases,items,data]` |
 | `--timeout` | HTTP请求超时时间（秒） | `30` |
 | `--verbose` | 显示详细日志 | `false` |
+
+### 🆕 F12浏览器开发者工具使用指南
+
+#### 快速开始
+1. 在浏览器中打开目标页面
+2. 按F12打开开发者工具，切换到Network标签
+3. 执行目标操作，找到对应的API请求
+4. 右键点击请求 → Copy → Copy as cURL (bash)
+5. 直接粘贴到命令行：
+
+```bash
+./caseurl2md --raw-curl '这里粘贴完整的F12 curl命令'
+```
+
+#### 支持的F12格式特性
+
+✅ **完整参数支持**：
+- 所有HTTP headers (`-H` 参数)
+- 完整的cookies (`-b` 或 `--cookie` 参数)
+- JSON数据体 (`--data-raw`, `--data-binary`, `-d` 参数)
+- 多行格式和复杂引号
+
+✅ **智能解析**：
+- 自动识别并提取业务关键字段
+- 智能处理JSON转义字符
+- 正确解析cookies和认证信息
+
+✅ **简化使用**：
+- 无需手动分离参数
+- 支持多行粘贴
+- 保持原有格式不变
 
 ## 输出格式
 
@@ -336,6 +391,41 @@ caseurl2md/
 
 ### 最新更新
 
+#### v2.1.0 - F12浏览器开发者工具完全支持 (2024-12-15)
+
+🎉 **革命性更新：支持完整的F12浏览器开发者工具curl命令格式！**
+
+**核心突破**：
+- ✅ **F12格式完全支持**：直接粘贴浏览器开发者工具复制的完整curl命令
+- ✅ **零参数分离**：无需手动分离headers、cookies、data等参数
+- ✅ **多行命令支持**：完整支持浏览器复制的多行curl格式
+- ✅ **智能URL解析**：正确识别目标URL，避免被headers中的URL误导
+- ✅ **增强Cookies支持**：完整的`-b`参数cookies解析功能
+- ✅ **无引号JSON支持**：智能处理`--data-raw`等无引号JSON参数
+- ✅ **Shell参数冲突解决**：新增`--raw-curl`参数避免CLI与curl参数冲突
+
+**使用体验革命性提升**：
+```bash
+# 之前：需要手动分离参数
+./caseurl2md --url "https://api.example.com" \
+             --header "Authorization: token" \
+             --header "Content-Type: application/json" \
+             --data '{"key":"value"}'
+
+# 现在：直接粘贴F12完整curl命令
+./caseurl2md --raw-curl 'curl "https://api.example.com" \
+  -H "Authorization: token" \
+  -H "Content-Type: application/json" \
+  --data-raw "{\"key\":\"value\"}" \
+  -b "session=abc123; user=456"'
+```
+
+**技术改进**：
+- ��写URL解析算法，精确识别curl命令中的目标URL
+- 增强JSON数据提取器，支持复杂转义和多格式参数
+- 优化正则表达式匹配，提高header和cookies解析准确性
+- 新增cookies数据结构，完整支持浏览器会话信息
+
 #### v2.0.0 - 智能业务用例解析引擎 (2024-12-15)
 
 🎉 **重大更新：完全重写的业务文本识别和树结构解析算法**
@@ -381,6 +471,14 @@ go build -o caseurl2md .
 3. **调整输出格式**：在 `SimplifiedNode` 结构体中修改字段定义
 
 ## 🚀 版本历史
+
+### v2.1.0 (2024-12-15) - F12浏览器开发者工具完全支持
+- 🎉 **革命性突破**：支持完整的F12浏览器开发者工具curl命令格式
+- ✅ **零配置使用**：直接粘贴完整curl命令，无需手动分离参数
+- ✅ **多行格式支持**：完整支持浏览器复制的多行curl命令
+- ✅ **增强Cookies支持**：完整的cookies解析和处理
+- ✅ **智能URL解析**：精确识别目标URL，避免被headers误导
+- ✅ **Shell冲突解决**：新增`--raw-curl`参数避免CLI参数冲突
 
 ### v2.0.0 (2024-12-15) - 智能业务用例解析引擎
 - 完全重写的核心解析算法

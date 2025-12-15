@@ -21,6 +21,7 @@ func (p *CurlParser) Parse(curlCmd string) (*config.RequestInfo, error) {
 	info := &config.RequestInfo{
 		Method:  "GET",
 		Headers: make(map[string]string),
+		Cookies: make(map[string]string),
 	}
 
 	if curlCmd == "" {
@@ -132,16 +133,16 @@ func isURL(str string) bool {
 		   strings.Contains(str, "://")
 }
 
-// extractDataBinary 提取--data-binary参数，处理复杂JSON
-func extractDataBinary(args string) string {
-	// 查找 --data-binary 参数的位置
-	dataBinaryIndex := strings.Index(args, "--data-binary")
-	if dataBinaryIndex == -1 {
+// extractDataParameter 提取指定类型的data参数，处理复杂JSON
+func extractDataParameter(args string, paramType string) string {
+	// 查找参数的位置
+	paramIndex := strings.Index(args, paramType)
+	if paramIndex == -1 {
 		return ""
 	}
 
-	// 跳过 --data-binary 标识
-	startIndex := dataBinaryIndex + len("--data-binary")
+	// 跳过参数标识
+	startIndex := paramIndex + len(paramType)
 
 	// 跳过空白字符
 	for startIndex < len(args) && (args[startIndex] == ' ' || args[startIndex] == '\t') {
@@ -196,13 +197,91 @@ func extractDataBinary(args string) string {
 		return result.String()
 	}
 
-	// 如果没有引号，尝试提取到下一个参数的开始
-	endIndex := startIndex
-	for endIndex < len(args) && args[endIndex] != ' ' && args[endIndex] != '\t' && args[endIndex] != '-' {
-		endIndex++
+	// 改进：如果第一个字符不是引号，尝试智能提取JSON内容
+	return extractUnquotedData(args, startIndex)
+}
+
+// extractDataBinary 提取--data-binary参数，处理复杂JSON（保留向后兼容）
+func extractDataBinary(args string) string {
+	return extractDataParameter(args, "--data-binary")
+}
+
+// extractUnquotedData 智能提取未加引号的数据内容
+func extractUnquotedData(args string, startIndex int) string {
+	if startIndex >= len(args) {
+		return ""
 	}
 
-	return args[startIndex:endIndex]
+	i := startIndex
+	result := strings.Builder{}
+	bracketCount := 0
+	braceCount := 0
+	inString := false
+	stringChar := byte(0)
+
+	for i < len(args) {
+		char := args[i]
+
+		// 处理转义字符
+		if char == '\\' && i+1 < len(args) {
+			result.WriteByte(char)
+			i++
+			if i < len(args) {
+				result.WriteByte(args[i])
+				i++
+			}
+			continue
+		}
+
+		// 处理字符串内容
+		if inString {
+			result.WriteByte(char)
+			if char == stringChar {
+				inString = false
+				stringChar = 0
+			}
+			i++
+			continue
+		}
+
+		// 检测字符串开始
+		if char == '"' || char == '\'' {
+			inString = true
+			stringChar = char
+			result.WriteByte(char)
+			i++
+			continue
+		}
+
+		// 计算括号层级
+		if char == '{' {
+			braceCount++
+		} else if char == '}' {
+			braceCount--
+		} else if char == '[' {
+			bracketCount++
+		} else if char == ']' {
+			bracketCount--
+		}
+
+		// 如果遇到参数分隔符且括号都已闭合，结束提取
+		if (char == ' ' || char == '\t') && braceCount == 0 && bracketCount == 0 {
+			break
+		}
+
+		// 如果遇到下一个参数的开始标志，结束提取
+		if char == '-' && braceCount == 0 && bracketCount == 0 {
+			// 检查是否是下一个参数（如 -H, -X, --data 等）
+			if i+1 < len(args) && (args[i+1] == ' ' || args[i+1] == '-') {
+				break
+			}
+		}
+
+		result.WriteByte(char)
+		i++
+	}
+
+	return result.String()
 }
 
 // 私有辅助函数，用于处理复杂的cURL解析场景
@@ -214,19 +293,25 @@ func parseComplexCurl(curlCmd string) (*config.RequestInfo, error) {
 	info := &config.RequestInfo{
 		Method:  "GET",
 		Headers: make(map[string]string),
+		Cookies: make(map[string]string),
 	}
 
 	if len(matches) > 2 {
 		info.Method = matches[2]
 	}
 
-	// 解析headers - 使用更强的匹配来处理复杂header值
-	headerRe := regexp.MustCompile(`(?:-H|--header)\s+['"]([^'"]*?)['"]`)
-	headerMatches := headerRe.FindAllStringSubmatch(curlCmd, -1)
+	// 解析headers - 使用更强的匹配来处理复杂header值，支持无引号和有引号的情况
+	// 使用两种不同的正则表达式来处理带引号和不带引号的情况
+	headerReQuoted := regexp.MustCompile(`(?:-H|--header)\s+["']([^"']+)["']`)
+	headerReUnquoted := regexp.MustCompile(`(?:-H|--header)\s+([^"'\s][^\s]*?)\s`)
+
+	var headerMatches [][]string
+	headerMatches = append(headerMatches, headerReQuoted.FindAllStringSubmatch(curlCmd, -1)...)
+	headerMatches = append(headerMatches, headerReUnquoted.FindAllStringSubmatch(curlCmd, -1)...)
 
 	for _, match := range headerMatches {
 		if len(match) > 1 {
-			headerStr := match[1]
+			headerStr := match[1] // match[1]是header值
 			// 解析单个header
 			if err := parseHeader(headerStr, info.Headers); err == nil {
 				// 成功解析header
@@ -234,26 +319,33 @@ func parseComplexCurl(curlCmd string) (*config.RequestInfo, error) {
 		}
 	}
 
-	// 解析data-binary 优先于其他data参数
-	info.Body = extractDataBinary(curlCmd)
+	// 解析cookies - 处理 -b 或 --cookie 参数
+	parseCookies(curlCmd, info)
+
+	// 解析所有类型的data参数，优先级：data-binary > data-raw > data > -d
+	info.Body = extractDataParameter(curlCmd, "--data-binary")
 	if info.Body == "" {
-		// 如果没有找到data-binary，尝试其他data参数
-		dataRe := regexp.MustCompile(`(?:--data|--data-raw|-d)\s+(['"]?)([^'"]+)$1`)
-		dataMatches := dataRe.FindStringSubmatch(curlCmd)
-		if len(dataMatches) > 2 {
-			info.Body = dataMatches[2]
-		}
+		info.Body = extractDataParameter(curlCmd, "--data-raw")
+	}
+	if info.Body == "" {
+		info.Body = extractDataParameter(curlCmd, "--data")
+	}
+	if info.Body == "" {
+		info.Body = extractDataParameter(curlCmd, "-d")
 	}
 
-	// 解析URL - 提取命令行中的最后一个URL（排除headers中的URL）
-	// 使用更精确的正则表达式，匹配作为独立参数的URL
-	urlRe := regexp.MustCompile(`['"]?(https?://[^'"\s]+)['"]?(?:\s|$)`)
-	urlMatches := urlRe.FindAllStringSubmatch(curlCmd, -1)
-	if len(urlMatches) > 0 {
-		// 取最后一个URL作为目标URL
-		lastMatch := urlMatches[len(urlMatches)-1]
-		if len(lastMatch) > 1 {
-			info.URL = lastMatch[1]
+	// 解析URL - 提取命令行中的第一个URL（curl命令的URL通常在最前面）
+	// 使用更精确的正则表达式，匹配作为独立参数的URL，排除headers中的URL
+	urlRe := regexp.MustCompile(`^\s*curl\s+['"]?(https?://[^'"\s]+)`)
+	urlMatches := urlRe.FindStringSubmatch(curlCmd)
+	if len(urlMatches) > 1 {
+		info.URL = urlMatches[1]
+	} else {
+		// 如果前面的模式没匹配到，使用备用方案：查找第一个以http开头的URL
+		backupUrlRe := regexp.MustCompile(`['"]?(https?://bytest\.bytedance\.net[^'"\s]+)['"]?`)
+		backupMatches := backupUrlRe.FindStringSubmatch(curlCmd)
+		if len(backupMatches) > 1 {
+			info.URL = backupMatches[1]
 		}
 	}
 
