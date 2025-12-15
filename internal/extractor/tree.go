@@ -1398,10 +1398,18 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 					// 如果没有找到合适的子节点，则返回nil让调用者处理多根结构
 					return nil
 				} else {
-					// 非根节点，使用默认标题
-					titleText = "未命名节点"
-					if e.verbose {
-						fmt.Printf("%s使用默认标题: '%s'\n", strings.Repeat("  ", depth), titleText)
+					// 非根节点，尝试从子节点推断合适的标题
+					inferredTitle := e.inferTitleFromChildren(childrenArray, depth)
+					if inferredTitle != "" {
+						titleText = inferredTitle
+						if e.verbose {
+							fmt.Printf("%s从子节点推断标题: '%s'\n", strings.Repeat("  ", depth), titleText)
+						}
+					} else {
+						titleText = "未命名节点"
+						if e.verbose {
+							fmt.Printf("%s��法推断标题，使用默认标题: '%s'\n", strings.Repeat("  ", depth), titleText)
+						}
 					}
 				}
 			}
@@ -1723,6 +1731,49 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 		}
 	}
 
+	// 检查时间相关的业务文本（如秒、分钟等时间描述）
+	if strings.Contains(text, "秒") || strings.Contains(text, "分钟") || strings.Contains(text, "后") {
+		// 检查是否包含业务场景关键词
+		timeBusinessKeywords := []string{"收起", "关闭", "隐藏", "消失", "展示", "显示", "提示", "引导", "助手", "页面", "自动"}
+		for _, keyword := range timeBusinessKeywords {
+			if strings.Contains(text, keyword) {
+				if e.verbose {
+					fmt.Printf("识别时间相关业务文本: '%s' (包含关键词: '%s')\n", text, keyword)
+				}
+				return true
+			}
+		}
+	}
+
+	// 检查埋点和数据统计相关的业务文本
+	if strings.Contains(text, "埋点") || strings.Contains(text, "上报") || strings.Contains(text, "统计") || strings.Contains(text, "快捷筛选") {
+		if e.verbose {
+			fmt.Printf("识别埋点统计业务文本: '%s'\n", text)
+		}
+		return true
+	}
+
+	// 检查配置和开关相关的业务文本
+	if strings.Contains(text, "配置") || strings.Contains(text, "开关") || strings.Contains(text, "tcc") || strings.Contains(text, "手动设置") {
+		if e.verbose {
+			fmt.Printf("识别配置开关业务文本: '%s'\n", text)
+		}
+		return true
+	}
+
+	// 检查BD操作相关的业务文本
+	if strings.Contains(text, "BD") || strings.Contains(text, "bd") {
+		bdActions := []string{"设置", "配置", "手动", "自动", "外呼", "开关", "状态", "页面", "���手"}
+		for _, action := range bdActions {
+			if strings.Contains(text, action) {
+				if e.verbose {
+					fmt.Printf("识别BD操作业务文本: '%s' (包含关键词: '%s')\n", text, action)
+				}
+				return true
+			}
+		}
+	}
+
 	// 特殊���合检查：识别常见的UI交互动作
 	uiInteractions := []string{
 		"点击页面其他", "点击其他", "页面其他内容", "其他内容",
@@ -1769,6 +1820,132 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 	}
 
 	return false
+}
+
+// inferTitleFromChildren 从子节点推断合适的标题
+func (e *TreeExtractor) inferTitleFromChildren(childrenArray []interface{}, depth int) string {
+	if e.verbose {
+		fmt.Printf("%s开始从子节点推断标题，子节点数: %d\n", strings.Repeat("  ", depth), len(childrenArray))
+	}
+
+	// 收集所有子节点的名称
+	var childNames []string
+	for _, child := range childrenArray {
+		if childMap, ok := child.(map[string]interface{}); ok {
+			// 尝试从子节点的data中提取text
+			if childData, hasData := childMap["data"]; hasData {
+				if dataMap, ok := childData.(map[string]interface{}); ok {
+					if textVal, hasText := dataMap["text"]; hasText {
+						if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+							childNames = append(childNames, textStr)
+							if e.verbose {
+								fmt.Printf("%s找到子节点文本: '%s'\n", strings.Repeat("  ", depth), textStr)
+							}
+						}
+					}
+					// 也检查richText
+					if richTextArray, hasRichText := dataMap["richText"]; hasRichText {
+						if richTextItems, ok := richTextArray.([]interface{}); ok {
+							for _, item := range richTextItems {
+								if richTextObj, ok := item.(map[string]interface{}); ok {
+									if textVal, hasText := richTextObj["text"]; hasText {
+										if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+											childNames = append(childNames, textStr)
+											if e.verbose {
+												fmt.Printf("%s找到子节点richText: '%s'\n", strings.Repeat("  ", depth), textStr)
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if len(childNames) == 0 {
+		if e.verbose {
+			fmt.Printf("%s未找到有效的子节点文本\n", strings.Repeat("  ", depth))
+		}
+		return ""
+	}
+
+	// 分析子节点名称的模式来推断父节点标题
+	if e.verbose {
+		fmt.Printf("%s子节点名称: %v\n", strings.Repeat("  ", depth), childNames)
+	}
+
+	// 模式1: 如果子节点都包含时间相关的词汇（如"3秒后"、"5秒后"），推断为时间相关的自动操作
+	timeRelatedCount := 0
+	for _, name := range childNames {
+		if strings.Contains(name, "秒后") || strings.Contains(name, "分钟后") || strings.Contains(name, "自动收起") || strings.Contains(name, "自动关闭") {
+			timeRelatedCount++
+		}
+	}
+	if timeRelatedCount > 0 && timeRelatedCount == len(childNames) {
+		return "自动收起/关闭"
+	}
+
+	// 模式2: 如果子节点包含"埋点"、"上报"、"筛选"等词汇，推断为数据埋点相关
+	for _, name := range childNames {
+		if strings.Contains(name, "埋点") || strings.Contains(name, "上报") || strings.Contains(name, "快捷筛选") {
+			return "数据埋点与统计"
+		}
+	}
+
+	// 模式3: 如果子节点包含配置、开关、tcc等词汇，推断为配置相关
+	for _, name := range childNames {
+		if strings.Contains(name, "配置") || strings.Contains(name, "开关") || strings.Contains(name, "tcc") || strings.Contains(name, "手动设置") {
+			return "配置与开关状态"
+		}
+	}
+
+	// 模式4: 如果子节点包含BD相关操作，推断为BD操作
+	for _, name := range childNames {
+		if strings.Contains(name, "BD") || strings.Contains(name, "手动设置") {
+			return "BD手动配置与状态"
+		}
+	}
+
+	// 模式5: 通用模式 - 从子节点名称中提取共同的关键词
+	allText := strings.Join(childNames, " ")
+
+	// 检查是否有明显的业务主题
+	businessThemes := []struct {
+		keywords []string
+		title    string
+	}{
+		{[]string{"助手", "引导", "收起", "自动"}, "AI助手交互"},
+		{[]string{"外呼", "开关", "配置"}, "自动外呼配置"},
+		{[]string{"筛选", "埋点", "统计"}, "筛选埋点功能"},
+		{[]string{"状态", "开关", "tcc"}, "状态管理"},
+	}
+
+	for _, theme := range businessThemes {
+		matchCount := 0
+		for _, keyword := range theme.keywords {
+			if strings.Contains(allText, keyword) {
+				matchCount++
+			}
+		}
+		if matchCount >= 2 { // 至少匹配两个关键词
+			return theme.title
+		}
+	}
+
+	// 模式6: 如果所有模式都不匹配，返回第一个子节点的核心概念
+	if len(childNames) > 0 {
+	 firstName := childNames[0]
+		// 提取前几个字符作为简化标题
+		if len([]rune(firstName)) > 10 {
+			return string([]rune(firstName)[:8]) + "..."
+		}
+		return firstName
+	}
+
+	return ""
 }
 
 // max 返回两个整数中的较大值
