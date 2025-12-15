@@ -178,7 +178,10 @@ func (e *TreeExtractor) isBusinessText(text string) bool {
 			"组", "实验", "对照", "逻辑", "方案", "功能", "页面", "模块", "流程",
 			"门店", "搜索", "输入", "结果", "包含", "客户", "详情", "列表", "数据", "扫码", "核销",
 			"资产", "中心", "商家", "产品", "实时", "订单", "指标", "展示", "排序", "筛选",
-			"从高", "从低", "由远", "由近", "到大", "到小", "默认", "不可", "操作", "高到低", "低到高", "远到近", "近到远"}
+			"从高", "从低", "由远", "由近", "到大", "到小", "默认", "不可", "操作", "高到低", "低到高", "远到近", "近到远",
+			// CRM和Agent相关词汇
+			"CRM", "Agent", "智能", "对话", "多轮", "携带", "上下文", "切换", "主题", "问题", "体验", "优化",
+			"查询", "数值", "空", "拒答", "场景", "历史", "存在", "维度", "正确", "展示为"}
 		isBusiness := false
 		for _, keyword := range businessKeywords {
 			if strings.Contains(text, keyword) {
@@ -191,9 +194,29 @@ func (e *TreeExtractor) isBusinessText(text string) bool {
 		}
 	}
 
-	// 检查是否为纯技术数据（如时间戳、ID、数字等）
-	if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") ||
-	   strings.HasPrefix(text, "e+") || strings.HasPrefix(text, "E+") ||
+	// 检查是否为纯技术数据（如时间戳、ID、数字等），但要避免误判业务编号文本
+	// 只有当文本以数字开头且长度很短时才认为是技术数据
+	if (strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") ||
+	    strings.HasPrefix(text, "3.") || strings.HasPrefix(text, "4.") ||
+	    strings.HasPrefix(text, "5.") || strings.HasPrefix(text, "6.") ||
+	    strings.HasPrefix(text, "7.") || strings.HasPrefix(text, "8.") ||
+	    strings.HasPrefix(text, "9.")) && len([]rune(text)) < 10 {
+		// 短的数字开头文本可能是业务步骤，检查是否包含业务关键词
+		businessKeywords := []string{"用户", "查询", "指标", "数据", "结果", "展示",
+			"Agent", "多轮", "对话", "携带", "上下文", "筛选", "条件", "切换", "主题", "开始", "新"}
+		hasBusinessKeyword := false
+		for _, keyword := range businessKeywords {
+			if strings.Contains(text, keyword) {
+				hasBusinessKeyword = true
+				break
+			}
+		}
+		if !hasBusinessKeyword {
+			return false // 纯技术编号文本
+		}
+	}
+
+	if strings.HasPrefix(text, "e+") || strings.HasPrefix(text, "E+") ||
 	   strings.HasPrefix(text, "[]") || strings.HasPrefix(text, "{}") ||
 	   strings.HasPrefix(text, "map[") || strings.Contains(text, ": 0") ||
 	   strings.Contains(text, ": 1") || strings.Contains(text, ": false") ||
@@ -1684,6 +1707,24 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 		businessKeywords := []string{"客户", "门店", "订单", "商品", "用户", "数据", "接口"}
 		for _, keyword := range businessKeywords {
 			if strings.Contains(text, keyword) {
+				return true
+			}
+		}
+	}
+
+	// 专门检查编号格式的业务文本
+	if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") || strings.HasPrefix(text, "3.") ||
+	   strings.HasPrefix(text, "4.") || strings.HasPrefix(text, "5.") || strings.HasPrefix(text, "6.") ||
+	   strings.HasPrefix(text, "7.") || strings.HasPrefix(text, "8.") || strings.HasPrefix(text, "9.") {
+		// 检查是否包含业务关键词
+		stepBusinessKeywords := []string{"用户", "查询", "指标", "数据", "结果", "展示",
+			"Agent", "多轮", "对话", "携带", "上下文", "筛选", "条件", "切换", "主题", "开始", "新",
+			"问题", "体验", "优化", "CRM", "智能", "数值", "空", "拒答", "场景", "历史", "存在", "维度"}
+		for _, keyword := range stepBusinessKeywords {
+			if strings.Contains(text, keyword) {
+				if e.verbose {
+					fmt.Printf("识别编号格式业务文本: '%s' (包含关键词: '%s')\n", text, keyword)
+				}
 				return true
 			}
 		}
