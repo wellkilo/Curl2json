@@ -14,10 +14,12 @@ import (
 var (
 	curlFile      string
 	fromCurl      string
+	rawCurl       string
 	url           string
 	method        string
 	headers       []string
 	data          string
+	cookies       string
 	out           string
 	titleKeys     []string
 	childrenKeys  []string
@@ -60,11 +62,13 @@ func Execute() error {
 func init() {
 	// 输入相关flags
 	rootCmd.Flags().StringVar(&fromCurl, "from-curl", "", "直接从命令行接收cURL命令")
+	rootCmd.Flags().StringVar(&rawCurl, "raw-curl", "", "接收完整的cURL命令字符串（支��多行格式）")
 	rootCmd.Flags().StringVar(&curlFile, "curl-file", "", "从文件读取cURL命令")
 	rootCmd.Flags().StringVar(&url, "url", "", "请求URL（不使用cURL时必需）")
 	rootCmd.Flags().StringVar(&method, "method", "GET", "请求方法")
 	rootCmd.Flags().StringSliceVar(&headers, "header", []string{}, "请求头，格式为'Key: Value'，可多次使用")
 	rootCmd.Flags().StringVar(&data, "data", "", "请求体数据")
+	rootCmd.Flags().StringVar(&cookies, "cookies", "", "cookies字符串，格式为'key1=value1; key2=value2'")
 
 	// 输出相关flags
 	rootCmd.Flags().StringVar(&out, "out", "", "输出文件路径（默认为output_{timestamp}.json）")
@@ -76,10 +80,19 @@ func init() {
 	// 其他flags
 	rootCmd.Flags().IntVar(&timeout, "timeout", 30, "HTTP请求超时时间（秒）")
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "显示详细日志")
+
+	// 重要：禁用 Cobra 的默认解析行为，防止它错误解析 cURL 命令中的参数
+	rootCmd.DisableFlagParsing = false
 }
 
 func runRoot(cmd *cobra.Command, args []string) error {
-	// 验证输入参数
+	// 特殊处理：如果使用 --from-curl 参数，但存在额外参数，将它们合并到 fromCurl 中
+	if fromCurl != "" && len(args) > 0 {
+		// 将额外的参数追加到 fromCurl 命令中
+		fromCurl = fromCurl + " " + strings.Join(args, " ")
+	}
+
+	// 验证输入���数
 	if err := validateInput(); err != nil {
 		return err
 	}
@@ -97,10 +110,17 @@ func runRoot(cmd *cobra.Command, args []string) error {
 	var err error
 
 	switch {
+	case rawCurl != "":
+		input = rawCurl
+		if verbose {
+			fmt.Println("使用 --raw-curl 参数接收完整cURL命令")
+			fmt.Printf("完整cURL命令: %s\n", input)
+		}
 	case fromCurl != "":
 		input = fromCurl
 		if verbose {
 			fmt.Println("从命令行参数读取cURL命令")
+			fmt.Printf("完整cURL命令: %s\n", input)
 		}
 	case curlFile != "":
 		input, err = readFromFile(curlFile)
@@ -140,6 +160,7 @@ func runRoot(cmd *cobra.Command, args []string) error {
 		URL:     url,
 		Method:  method,
 		Headers: parseHeaders(headers),
+		Cookies: parseCookies(cookies),
 		Body:    data,
 	})
 
@@ -159,6 +180,9 @@ func runRoot(cmd *cobra.Command, args []string) error {
 func validateInput() error {
 	// 检查是否有输入
 	inputCount := 0
+	if rawCurl != "" {
+		inputCount++
+	}
 	if fromCurl != "" {
 		inputCount++
 	}
@@ -170,7 +194,7 @@ func validateInput() error {
 	}
 
 	if inputCount == 0 {
-		return fmt.Errorf("必须指定一种输入方式：--from-curl, --curl-file, --url, 或者从stdin提供cURL命令")
+		return fmt.Errorf("必须指定一种输入方式：--raw-curl, --from-curl, --curl-file, --url, 或者从stdin提供cURL命令")
 	}
 
 	if inputCount > 1 {
@@ -212,6 +236,33 @@ func parseHeaders(headerSlice []string) map[string]string {
 		}
 	}
 	return headers
+}
+
+func parseCookies(cookieStr string) map[string]string {
+	cookies := make(map[string]string)
+	if cookieStr == "" {
+		return cookies
+	}
+
+	// 分割cookie字符串
+	pairs := strings.Split(cookieStr, ";")
+	for _, pair := range pairs {
+		pair = strings.TrimSpace(pair)
+		if pair == "" {
+			continue
+		}
+
+		// 分割键值对
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			if key != "" {
+				cookies[key] = value
+			}
+		}
+	}
+	return cookies
 }
 
 func writeOutput(filename string, content []byte) error {

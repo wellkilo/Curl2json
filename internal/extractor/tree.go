@@ -1,10 +1,12 @@
 package extractor
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
+	"unicode/utf8"
 )
 
 // TreeExtractor 树抽取器
@@ -60,8 +62,8 @@ func (e *TreeExtractor) Extract(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("未找到有效的树状结构")
 	}
 
-	// 序列化结果
-	output, err := json.MarshalIndent(result, "", "  ")
+	// 序列化结果，使用自定义函数避免Unicode转义
+	output, err := marshalJSONWithoutEscape(result)
 	if err != nil {
 		return nil, fmt.Errorf("结果序列化失败: %w", err)
 	}
@@ -125,37 +127,17 @@ func (e *TreeExtractor) ExtractTextContent(data interface{}) []string {
 	return texts
 }
 
-// isBusinessText 判断文本是否为业务文本（非技术字段）
+// isBusinessText 简化的业务文本判断，过滤明显的技术字段
 func (e *TreeExtractor) isBusinessText(text string) bool {
 	if text == "" {
 		return false
 	}
 
-	// 过滤掉明显的技术字段和ID
+	// 过滤明显的技术字段
 	technicalKeywords := []string{
 		"CreatedAt", "UpdatedAt", "TestCaseId", "ProductId", "errCode",
-		"Status", "StatusCode", "CaseNum", "BaseType", "SourceType",
-		"IsTemplate", "IsStrict", "Theme", "Remark", "Template",
-		"EntityId", "EntityVersion", "CustomFields", "Directory",
-		"CreatedBy", "UpdatedBy", "ParentDirLink", "BaseResp",
-		"CreatedAtTS", "UpdatedAtTS", "TestCaseStatus", "CommentInfo",
-		"BelongIDList", "MarkingCheck", "StrictMindVersion",
-		"BitsDependencies", "TempParentDirLink", "FlowItemList",
-		"ScriptCaseList", "images", "imageSize", "hyperlink",
-		"hyperlinkTitle", "progress", "priority", "script_task",
-		"resource", "nodeType", "parentID", "attachment", "genId",
-		"WorkItemTypeKey", "RequirementId", "RequirementLink",
-		"RequirementSource", "RequirementTitle", "project", "projectName",
-		"UserKey", "DisplayName", "EnName", "DirId", "DirName",
-		"DirNameEn", "total", "finish", "session_id", "expiry_time",
-		"token_type", "permissions", "user", "donghe", "kilov",
-		"sess_", "JWT", "debug_info", "details", "suggestions",
-		"Please refresh", "Check your", "Contact support", "Auth",
-		"ERROR", "validate", "failed", "expired", "Token",
-		"王通", "张三", "李四", "wangtong", "Created By", "updated by",
-		// 新增：过滤错误响应相关的技术词汇
-		"message", "Auth ERROR", "Jwt validate failed", "API Response",
-		"Unauthorized", "errCode", "caseApi", "getCaseDetail",
+		"Status", "StatusCode", "session_id", "expiry_time", "token_type",
+		"debug_info", "suggestions", "ERROR", "failed", "expired",
 	}
 
 	// 检查是否包含技术关键词
@@ -165,84 +147,21 @@ func (e *TreeExtractor) isBusinessText(text string) bool {
 		}
 	}
 
-	// 新增：特殊过滤 - 如果文本看起来像是API错误响应的一部分，直接过滤
-	if strings.Contains(text, "Auth ERROR") || strings.Contains(text, "Jwt validate failed") ||
-	   strings.Contains(text, "API Response") || strings.Contains(text, "errCode") {
+	// 过滤技术数据格式
+	if strings.HasPrefix(text, "[]") || strings.HasPrefix(text, "{}") ||
+	   strings.HasPrefix(text, "map[") || strings.HasPrefix(text, "e+") {
 		return false
 	}
 
-	// 过滤掉人名模式（通常是2-3个中文字符，后面可能跟点号）
-	if len([]rune(text)) >= 2 && len([]rune(text)) <= 4 && hasChinese(text) {
-		// 改进的人名检测 - 包含更多业务关键词
-		businessKeywords := []string{"测试", "优化", "性能", "场景", "验证", "回归",
-			"组", "实验", "对照", "逻辑", "方案", "功能", "页面", "模块", "流程",
-			"门店", "搜索", "输入", "结果", "包含", "客户", "详情", "列表", "数据", "扫码", "核销",
-			"资产", "中心", "商家", "产品", "实时", "订单", "指标", "展示", "排序", "筛选",
-			"从高", "从低", "由远", "由近", "到大", "到小", "默认", "不可", "操作", "高到低", "低到高", "远到近", "近到远",
-			// CRM和Agent相关词汇
-			"CRM", "Agent", "智能", "对话", "多轮", "携带", "上下文", "切换", "主题", "问题", "体验", "优化",
-			"查询", "数值", "空", "拒答", "场景", "历史", "存在", "维度", "正确", "展示为"}
-		isBusiness := false
-		for _, keyword := range businessKeywords {
-			if strings.Contains(text, keyword) {
-				isBusiness = true
-				break
-			}
-		}
-		if !isBusiness {
-			return false // 很可能是人名
-		}
-	}
-
-	// 检查是否为纯技术数据（如时间戳、ID、数字等），但要避免误判业务编号文本
-	// 只有当文本以数字开头且长度很短时才认为是技术数据
-	if (strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") ||
-	    strings.HasPrefix(text, "3.") || strings.HasPrefix(text, "4.") ||
-	    strings.HasPrefix(text, "5.") || strings.HasPrefix(text, "6.") ||
-	    strings.HasPrefix(text, "7.") || strings.HasPrefix(text, "8.") ||
-	    strings.HasPrefix(text, "9.")) && len([]rune(text)) < 10 {
-		// 短的数字开头文本可能是业务步骤，检查是否包含业务关键词
-		businessKeywords := []string{"用户", "查询", "指标", "数据", "结果", "展示",
-			"Agent", "多轮", "对话", "携带", "上下文", "筛选", "条件", "切换", "主题", "开始", "新"}
-		hasBusinessKeyword := false
-		for _, keyword := range businessKeywords {
-			if strings.Contains(text, keyword) {
-				hasBusinessKeyword = true
-				break
-			}
-		}
-		if !hasBusinessKeyword {
-			return false // 纯技术编号文本
-		}
-	}
-
-	if strings.HasPrefix(text, "e+") || strings.HasPrefix(text, "E+") ||
-	   strings.HasPrefix(text, "[]") || strings.HasPrefix(text, "{}") ||
-	   strings.HasPrefix(text, "map[") || strings.Contains(text, ": 0") ||
-	   strings.Contains(text, ": 1") || strings.Contains(text, ": false") ||
-	   strings.Contains(text, ": true") || strings.Contains(text, "read write") {
-		return false
-	}
-
-	// 过滤掉短英文技术词汇
-	shortTechnicalWords := []string{"api", "url", "http", "get", "post", "put", "delete"}
+	// 过滤短英文技术词汇
+	shortTechnicalWords := []string{"api", "url", "http", "get", "post"}
 	for _, word := range shortTechnicalWords {
 		if strings.EqualFold(text, word) {
 			return false
 		}
 	}
 
-	// 检查是否为中文或英文业务文本
-	if hasChinese(text) {
-		return true
-	}
-
-	// 英文文本需要更长且包含业务词汇
-	if isEnglishBusinessText(text) {
-		return true
-	}
-
-	return false
+	return true
 }
 
 // hasChinese 检查文本是否包含中文字符
@@ -284,13 +203,13 @@ func isEnglishBusinessText(text string) bool {
 	return false
 }
 
-// createDefaultStructure 为非标准响应创建默认树状结构，只提取业务文本
+// createDefaultStructure 基于��知结构直接解析TestCaseMind
 func (e *TreeExtractor) createDefaultStructure(data interface{}) interface{} {
 	if e.verbose {
-		fmt.Println("创建默认树状结构...")
+		fmt.Println("开始解析TestCaseMind结构...")
 	}
 
-	// 优先尝试解析TestCaseMind结构
+	// 直接解析TestCaseMind结构（基于已知的API响应格式）
 	if testCaseMindNodes := e.parseTestCaseMindStructureDirect(data); testCaseMindNodes != nil {
 		if e.verbose {
 			fmt.Println("成功解析TestCaseMind结构")
@@ -298,16 +217,11 @@ func (e *TreeExtractor) createDefaultStructure(data interface{}) interface{} {
 		return testCaseMindNodes
 	}
 
-	// 然后尝试标准的树结构解析
-	if standardTree := e.tryStandardTreeStructure(data); standardTree != nil {
-		if e.verbose {
-			fmt.Println("成功解析标准树结构")
-		}
-		return standardTree
+	// 如果没有TestCaseMind结构，返回空结果
+	if e.verbose {
+		fmt.Println("未找到TestCaseMind结构，返回空结果")
 	}
-
-	// 回退到通用的业务文本提取
-	return e.createGenericBusinessTextStructure(data)
+	return nil
 }
 
 // tryStandardTreeStructure 尝试解析标准树结构
@@ -446,10 +360,10 @@ func (e *TreeExtractor) parseTestCaseMindStructureDirect(data interface{}) inter
 	return e.parseTestCaseMindStructurePattern(testCaseMindData)
 }
 
-// parseTestCaseMindStructurePattern 基于JSON结构模式识别来解析TestCaseMind
+// parseTestCaseMindStructurePattern 基于已知结构直接解析TestCaseMind
 func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[string]interface{}) interface{} {
 	if e.verbose {
-		fmt.Println("开始结构模式识别...")
+		fmt.Println("开始解析TestCaseMind结构...")
 	}
 
 	// 检查是否有data字段
@@ -457,26 +371,20 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 		// 尝试解析根节点
 		rootNode := e.parseTestCaseMindNode(testCaseMindData, 0)
 
-		// 如果根节点为空（比如text为空），但有children，则解析为多根结构
+		// 如果根节点为空但有children，则解析为多根结构
 		if rootNode == nil {
 			if childrenData, hasChildren := testCaseMindData["children"]; hasChildren {
 				if childrenArray, ok := childrenData.([]interface{}); ok && len(childrenArray) > 0 {
 					if e.verbose {
-						fmt.Printf("根节点text为空，解析为多根结构，共 %d 个顶级节点\n", len(childrenArray))
+						fmt.Printf("解析为多根结构，共 %d 个顶级节点\n", len(childrenArray))
 					}
 
 					var validNodes []*SimplifiedNode
 					for _, child := range childrenArray {
-						childMap, ok := child.(map[string]interface{})
-						if !ok {
-							continue
-						}
-
-						if candidate := e.parseTestCaseMindNode(childMap, 0); candidate != nil {
-							if e.verbose {
-								fmt.Printf("找到第 %d 个有效根节点: %s\n", len(validNodes)+1, candidate.Name)
+						if childMap, ok := child.(map[string]interface{}); ok {
+							if candidate := e.parseTestCaseMindNode(childMap, 0); candidate != nil {
+								validNodes = append(validNodes, candidate)
 							}
-							validNodes = append(validNodes, candidate)
 						}
 					}
 
@@ -484,28 +392,20 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 						if e.verbose {
 							fmt.Printf("返回 %d 个有效根节点的数组\n", len(validNodes))
 						}
-						// 返回数组格式，与预期结果一致
 						return validNodes
-					}
-
-					if e.verbose {
-						fmt.Println("没有找到有效的根节点")
 					}
 				}
 			}
 		} else {
-			// 成功解析出根节点，检查是否需要转换为数组格式
+			// 成功解析出根节点，包装为数组格式保持一致性
 			if e.verbose {
-				fmt.Printf("检测到标准单根结构，根节点: %s\n", rootNode.Name)
+				fmt.Printf("检测到单根结构，根节点: %s\n", rootNode.Name)
 			}
-
-			// 根据预期结果，将单根节点也包装成数组格式
-			// 这样保持输出格式的一致性
 			return []*SimplifiedNode{rootNode}
 		}
 	}
 
-	// 检测是否为只有children数组的多根结构
+	// 如果没有data字段但有children，尝试多根结构
 	if childrenData, hasChildren := testCaseMindData["children"]; hasChildren {
 		if childrenArray, ok := childrenData.([]interface{}); ok && len(childrenArray) > 0 {
 			if e.verbose {
@@ -514,222 +414,25 @@ func (e *TreeExtractor) parseTestCaseMindStructurePattern(testCaseMindData map[s
 
 			var validNodes []*SimplifiedNode
 			for _, child := range childrenArray {
-				childMap, ok := child.(map[string]interface{})
-				if !ok {
-					continue
-				}
-
-				if candidate := e.parseTestCaseMindNode(childMap, 0); candidate != nil {
-					if e.verbose {
-						fmt.Printf("找到第 %d 个有效根节点: %s\n", len(validNodes)+1, candidate.Name)
+				if childMap, ok := child.(map[string]interface{}); ok {
+					if candidate := e.parseTestCaseMindNode(childMap, 0); candidate != nil {
+						validNodes = append(validNodes, candidate)
 					}
-					validNodes = append(validNodes, candidate)
 				}
 			}
 
 			if len(validNodes) > 0 {
-				if e.verbose {
-					fmt.Printf("返回 %d 个有效根节点的数组\n", len(validNodes))
-				}
 				return validNodes
 			}
-
-			if e.verbose {
-				fmt.Println("没有找到有效的根节点")
-			}
-		}
-	}
-
-	// 回退到原始解析
-	if e.verbose {
-		fmt.Println("回退到原始解析逻辑")
-	}
-	result := e.parseTestCaseMindNode(testCaseMindData, 0)
-
-	// 如果根节点解析失败但存在children，尝试解析为多根结构
-	if result == nil {
-		if childrenData, hasChildren := testCaseMindData["children"]; hasChildren {
-			if childrenArray, ok := childrenData.([]interface{}); ok && len(childrenArray) > 0 {
-				if e.verbose {
-					fmt.Printf("根节点解析失败，尝试多根结构解析，子节点数: %d\n", len(childrenArray))
-				}
-				return e.parseMultiRootNode(childrenArray, 0)
-			}
-		}
-	} else {
-		// 如果成功解析出根节点，将其包装为数组格式
-		return []*SimplifiedNode{result}
-	}
-
-	return result
-}
-
-// isGoodRootNode 评估节点是否适合作为根节点
-func (e *TreeExtractor) isGoodRootNode(node *SimplifiedNode) bool {
-	if node == nil || node.Name == "" {
-		return false
-	}
-
-	// 检查文本长度 - 根节点通常不要太长也不要太短
-	textLength := len([]rune(node.Name))
-	if textLength < 2 || textLength > 50 {
-		if e.verbose {
-			fmt.Printf("节点 '%s' 长度不合适: %d\n", node.Name, textLength)
-		}
-		return false
-	}
-
-	// 检查是否是真正的业务文本
-	if !e.isBusinessText(node.Name) {
-		if e.verbose {
-			fmt.Printf("节点 '%s' 不符合业务文本特征\n", node.Name)
-		}
-		return false
-	}
-
-	// 检查是否包含过多的技术词汇
-	technicalPatterns := []string{
-		"接口", "系统", "平台", "验证", "测试",  // 移除了可能在业务标题中出现的词汇
-		"API", "HTTP", "JSON", "XML", "SQL", "UI", "UX", "QA", "CI", "CD",
-	}
-
-	technicalCount := 0
-	for _, pattern := range technicalPatterns {
-		if strings.Contains(node.Name, pattern) {
-			technicalCount++
-		}
-	}
-
-	// 如果技术词汇占比过高（超过30%），可能不是好的根节点
-	words := strings.Fields(node.Name)
-	if len(words) > 0 && float64(technicalCount)/float64(len(words)) > 0.3 {
-		if e.verbose {
-			fmt.Printf("节点 '%s' 技术词汇过多: %d/%d\n", node.Name, technicalCount, len(words))
-		}
-		return false
-	}
-
-	// 检查是否是典型的业务场景描述
-	businessKeywords := []string{
-		"客户", "用户", "订单", "商品", "门店", "页面", "功能", "模块", "流程",
-		"详情", "列表", "搜索", "添加", "编辑", "删除", "查看", "管理",
-	}
-
-	hasBusinessKeyword := false
-	for _, keyword := range businessKeywords {
-		if strings.Contains(node.Name, keyword) {
-			hasBusinessKeyword = true
-			break
-		}
-	}
-
-	if !hasBusinessKeyword {
-		if e.verbose {
-			fmt.Printf("节点 '%s' 缺少业务关键词\n", node.Name)
-		}
-		return false
-	}
-
-	return true
-}
-
-// selectBestRootNode 从候选节点中选择最佳根节点
-func (e *TreeExtractor) selectBestRootNode(candidates []*SimplifiedNode) *SimplifiedNode {
-	if len(candidates) == 0 {
-		return nil
-	}
-	if len(candidates) == 1 {
-		return candidates[0]
-	}
-
-	// 为每个候选节点评分
-	type scoredNode struct {
-		node   *SimplifiedNode
-		score  float64
-		reason string
-	}
-
-	var scoredNodes []scoredNode
-
-	for _, candidate := range candidates {
-		score := 0.0
-		reasons := []string{}
-
-		// 评分标准1: 文本长度适中（6-15个字符最佳）
-		length := len([]rune(candidate.Name))
-		if length >= 6 && length <= 15 {
-			score += 30
-			reasons = append(reasons, "长度适中")
-		} else if length > 15 {
-			score -= 10
-			reasons = append(reasons, "过长")
-		} else {
-			score -= 20
-			reasons = append(reasons, "过短")
-		}
-
-		// 评分标准2: 包含核心业务关键词
-		coreKeywords := []string{"客户", "用户", "订单", "商品", "门店", "页面", "详情", "列表"}
-		for _, keyword := range coreKeywords {
-			if strings.Contains(candidate.Name, keyword) {
-				score += 25
-				reasons = append(reasons, fmt.Sprintf("包含核心关键词'%s'", keyword))
-			}
-		}
-
-		// 评分标准3: 避免技术词汇
-		technicalWords := []string{"系统", "平台", "接口", "验证", "测试"}  // 移除了业务相关的词汇
-		technicalCount := 0
-		for _, word := range technicalWords {
-			if strings.Contains(candidate.Name, word) {
-				technicalCount++
-				score -= 15
-			}
-		}
-		if technicalCount > 0 {
-			reasons = append(reasons, fmt.Sprintf("包含%d个技术词汇", technicalCount))
-		}
-
-		// 评分标准4: 子节点数量（有子节点更好）
-		if len(candidate.Children) > 0 {
-			score += 20
-			reasons = append(reasons, fmt.Sprintf("有%d个子节点", len(candidate.Children)))
-		}
-
-		// 评分标准5: 结构简洁性
-		if !strings.Contains(candidate.Name, "-") || strings.Count(candidate.Name, "-") <= 1 {
-			score += 10
-			reasons = append(reasons, "结构简洁")
-		}
-
-		scoredNodes = append(scoredNodes, scoredNode{
-			node:   candidate,
-			score:  score,
-			reason: strings.Join(reasons, ", "),
-		})
-	}
-
-	// 选择得分最高的节点
-	best := scoredNodes[0]
-	for _, scored := range scoredNodes {
-		if scored.score > best.score {
-			best = scored
 		}
 	}
 
 	if e.verbose {
-		fmt.Printf("根节点选择结果:\n")
-		for _, scored := range scoredNodes {
-			marker := " "
-			if scored.node.Name == best.node.Name {
-				marker = "✓"
-			}
-			fmt.Printf("  %s '%s': %.1f分 (%s)\n", marker, scored.node.Name, scored.score, scored.reason)
-		}
+		fmt.Println("未找到有效的TestCaseMind结构")
 	}
-
-	return best.node
+	return nil
 }
+
 
 
 // extractTestCaseMindStructure 专门解析TestCaseMind的三层嵌套结构
@@ -1284,7 +987,7 @@ func min(a, b int) int {
 	return b
 }
 
-// parseTestCaseMindNode 递归解析TestCaseMind节点，支持任意层级
+// parseTestCaseMindNode 直接解析TestCaseMind节点，基于已知结构
 func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, depth int) *SimplifiedNode {
 	if e.verbose {
 		fmt.Printf("%sparseTestCaseMindNode 开始，深度: %d\n", strings.Repeat("  ", depth), depth)
@@ -1307,108 +1010,53 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 		return nil
 	}
 
-	// 提取节点标题，优先从richText获取
+	// 直接提取节点标题，不进行复杂的业务文本过滤
 	var titleText string
 
-	// 优先从richText中提取标题
+	// 1. 优先从richText中提取第一个文本
 	if richTextArray, exists := currentData["richText"]; exists {
-		if richTextItems, ok := richTextArray.([]interface{}); ok {
-			if e.verbose {
-				fmt.Printf("%s找到richText数组，长度: %d\n", strings.Repeat("  ", depth), len(richTextItems))
-			}
-			// 收集所有有效的业务文本
-			var validTexts []string
+		if richTextItems, ok := richTextArray.([]interface{}); ok && len(richTextItems) > 0 {
 			for _, item := range richTextItems {
 				if richTextObj, ok := item.(map[string]interface{}); ok {
-					if textVal, textExists := richTextObj["text"]; textExists {
-						if textStr, ok := textVal.(string); ok && textStr != "" {
-							if e.verbose {
-								fmt.Printf("%srichText文本: '%s', 是否业务文本: %v\n", strings.Repeat("  ", depth), textStr, e.isBusinessText(textStr))
-							}
-							if e.isBusinessText(textStr) {
-								validTexts = append(validTexts, textStr)
-							}
-						}
+					if textVal, ok := richTextObj["text"].(string); ok && textVal != "" {
+						titleText = textVal
+						break
 					}
-				}
-			}
-			// 使用第一个有效的业务文本作为标题
-			if len(validTexts) > 0 {
-				titleText = validTexts[0]
-				if e.verbose {
-					fmt.Printf("%s使用richText作为标题: '%s'\n", strings.Repeat("  ", depth), titleText)
 				}
 			}
 		}
 	}
 
-	// 如果richText中没有找到合适的标题，使用text字段
+	// 2. 如果richText中没有，使用text字段
 	if titleText == "" {
-		if textVal, ok := currentData["text"].(string); ok {
-			if e.verbose {
-				fmt.Printf("%s发现text字段: '%s', 长度: %d\n", strings.Repeat("  ", depth), textVal, len(textVal))
-			}
-			// 对于根节点，如果text为空但有children，不直接返回nil
-			if textVal != "" {
-				// 放宽业务文本判断，特别是对于常见的业务界面元素
-				if e.isBusinessText(textVal) || e.isUIBusinessText(textVal, depth) {
-					titleText = textVal
-					if e.verbose {
-						fmt.Printf("%s使用text字段作为标题: '%s'\n", strings.Repeat("  ", depth), titleText)
-					}
-				} else if e.verbose {
-					fmt.Printf("%stext字段不是业务文本，跳过: '%s'\n", strings.Repeat("  ", depth), textVal)
-				}
-			}
+		if textVal, ok := currentData["text"].(string); ok && textVal != "" {
+			titleText = textVal
 		}
 	}
 
-	// 对于有children的根节点，即使没有有效的标题，也尝试创建一个虚拟节点
-	if titleText == "" {
+	// 3. 对于根节点有子节点但无标题的情况，创建多根结构
+	if titleText == "" && depth == 0 {
 		childrenData, hasChildren := nodeData["children"]
 		if hasChildren {
 			if childrenArray, ok := childrenData.([]interface{}); ok && len(childrenArray) > 0 {
-				if depth == 0 {
-					// 这是根节点且有子节点，为多根结构创建数组而不是单个节点
-					if e.verbose {
-						fmt.Printf("%s根节点无标题但有子节点，解析为多根结构\n", strings.Repeat("  ", depth))
-					}
-					// 继续解析子节点，让调用者处理多根结构，但不直接返回nil
-					// 先尝试解析所有子节点，看看能否找到有效的根节点候选
-					var validNodes []*SimplifiedNode
-					for _, child := range childrenArray {
-						if childMap, ok := child.(map[string]interface{}); ok {
-							if childNode := e.parseTestCaseMindNode(childMap, depth+1); childNode != nil {
-								validNodes = append(validNodes, childNode)
-							}
+				// 直接返回多根结构数组
+				var validNodes []*SimplifiedNode
+				for _, child := range childrenArray {
+					if childMap, ok := child.(map[string]interface{}); ok {
+						if childNode := e.parseTestCaseMindNode(childMap, depth+1); childNode != nil {
+							validNodes = append(validNodes, childNode)
 						}
 					}
-
-					// 如果找到了有效的子节点，选择最佳的一个作为根节点
-					if len(validNodes) > 0 {
-						bestNode := e.selectBestBusinessRootNode(validNodes)
-						if bestNode != nil {
-							if e.verbose {
-								fmt.Printf("%s从子节点中选择最佳根节点: '%s'\n", strings.Repeat("  ", depth), bestNode.Name)
-							}
-							return bestNode
-						}
-					}
-
-					// 如果没有找到合适的子节点，则返回nil让调用者处理多根结构
+				}
+				if len(validNodes) > 0 {
+					// 返回nil，让调用者处理多根结构
 					return nil
-				} else {
-					// 非根节点，使用默认标题
-					titleText = "未命名节点"
-					if e.verbose {
-						fmt.Printf("%s使用默认标题: '%s'\n", strings.Repeat("  ", depth), titleText)
-					}
 				}
 			}
 		}
 	}
 
-	// 如果仍然没有找到标题，跳过这个节点
+	// 4. 如果还是没有标题，跳过这个节点
 	if titleText == "" {
 		if e.verbose {
 			fmt.Printf("%s未找到有效标题，跳过节点\n", strings.Repeat("  ", depth))
@@ -1419,10 +1067,10 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 	// 创建当前节点
 	simpleNode := &SimplifiedNode{
 		Name: titleText,
-		Children:  []*SimplifiedNode{},
+		Children: []*SimplifiedNode{},
 	}
 
-	// 递归处理子节点
+	// 处理子节点
 	childrenData, exists := nodeData["children"]
 	if !exists {
 		if e.verbose {
@@ -1434,16 +1082,12 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 	childrenArray, ok := childrenData.([]interface{})
 	if !ok || len(childrenArray) == 0 {
 		if e.verbose {
-			fmt.Printf("%schildren为空或格式错误，返回节点: '%s'\n", strings.Repeat("  ", depth), titleText)
+			fmt.Printf("%schildren为空，返回节点: '%s'\n", strings.Repeat("  ", depth), titleText)
 		}
 		return simpleNode
 	}
 
-	if e.verbose {
-		fmt.Printf("%s处理 %d 个子节点\n", strings.Repeat("  ", depth), len(childrenArray))
-	}
-
-	// 处理每个子节点
+	// 直接递归处理所有子节点
 	for i, child := range childrenArray {
 		childMap, ok := child.(map[string]interface{})
 		if !ok {
@@ -1455,9 +1099,6 @@ func (e *TreeExtractor) parseTestCaseMindNode(nodeData map[string]interface{}, d
 
 		childNode := e.parseTestCaseMindNode(childMap, depth+1)
 		if childNode != nil {
-			if e.verbose {
-				fmt.Printf("%s添加子节点: '%s'\n", strings.Repeat("  ", depth), childNode.Name)
-			}
 			simpleNode.Children = append(simpleNode.Children, childNode)
 		}
 	}
@@ -1712,6 +1353,87 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 		}
 	}
 
+	// 检查常见的业务动作和状态描述
+	businessActions := []string{"点击", "页面", "其他", "内容", "手动", "打开", "状态", "为准", "不影响", "当前", "开关", "状态", "配置", "tcc", "引导", "收起", "助手", "自动"}
+	for _, action := range businessActions {
+		if strings.Contains(text, action) {
+			if e.verbose {
+				fmt.Printf("识别业务动作文本: '%s' (包含关键词: '%s')\n", text, action)
+			}
+			return true
+		}
+	}
+
+	// 检查时间相关的业务文本（如秒、分钟等时间描述）
+	if strings.Contains(text, "秒") || strings.Contains(text, "分钟") || strings.Contains(text, "后") {
+		// 检查是否包含业务场景关键词
+		timeBusinessKeywords := []string{"收起", "关闭", "隐藏", "消失", "展示", "显示", "提示", "引导", "助手", "页面", "自动"}
+		for _, keyword := range timeBusinessKeywords {
+			if strings.Contains(text, keyword) {
+				if e.verbose {
+					fmt.Printf("识别时间相关业务文本: '%s' (包含关键词: '%s')\n", text, keyword)
+				}
+				return true
+			}
+		}
+	}
+
+	// 检查埋点和数据统计相关的业务文本
+	if strings.Contains(text, "埋点") || strings.Contains(text, "上报") || strings.Contains(text, "统计") || strings.Contains(text, "快捷筛选") {
+		if e.verbose {
+			fmt.Printf("识别埋点统计业务文本: '%s'\n", text)
+		}
+		return true
+	}
+
+	// 检查配置和开关相关的业务文本
+	if strings.Contains(text, "配置") || strings.Contains(text, "开关") || strings.Contains(text, "tcc") || strings.Contains(text, "手动设置") {
+		if e.verbose {
+			fmt.Printf("识别配置开关业务文本: '%s'\n", text)
+		}
+		return true
+	}
+
+	// 检查BD操作相关的业务文本
+	if strings.Contains(text, "BD") || strings.Contains(text, "bd") {
+		bdActions := []string{"设置", "配置", "手动", "自动", "外呼", "开关", "状态", "页面", "���手"}
+		for _, action := range bdActions {
+			if strings.Contains(text, action) {
+				if e.verbose {
+					fmt.Printf("识别BD操作业务文本: '%s' (包含关键词: '%s')\n", text, action)
+				}
+				return true
+			}
+		}
+	}
+
+	// 特殊���合检查：识别常见的UI交互动作
+	uiInteractions := []string{
+		"点击页面其他", "点击其他", "页面其他内容", "其他内容",
+		"手动打开", "打开状态", "开关状态", "tcc配置",
+		"AI助手", "助手引导", "引导收起", "自动收起",
+		"页面内容", "页面其他", "非按钮", "非输入框",
+	}
+	for _, interaction := range uiInteractions {
+		if strings.Contains(text, interaction) {
+			if e.verbose {
+				fmt.Printf("识别UI交互文本: '%s' (匹配模式: '%s')\n", text, interaction)
+			}
+			return true
+		}
+	}
+
+	// 检查是否为描述开关状态或配置相关的文本
+	if (strings.Contains(text, "为准") && strings.Contains(text, "不影响")) ||
+	   (strings.Contains(text, "手动") && strings.Contains(text, "状态")) ||
+	   (strings.Contains(text, "配置") && strings.Contains(text, "tcc")) ||
+	   (strings.Contains(text, "当前") && strings.Contains(text, "开关")) {
+		if e.verbose {
+			fmt.Printf("识别状态配置文本: '%s'\n", text)
+		}
+		return true
+	}
+
 	// 专门检查编号格式的业务文本
 	if strings.HasPrefix(text, "1.") || strings.HasPrefix(text, "2.") || strings.HasPrefix(text, "3.") ||
 	   strings.HasPrefix(text, "4.") || strings.HasPrefix(text, "5.") || strings.HasPrefix(text, "6.") ||
@@ -1733,10 +1455,199 @@ func (e *TreeExtractor) isUIBusinessText(text string, depth int) bool {
 	return false
 }
 
+// inferTitleFromChildren 从子节点推断合适的标题
+func (e *TreeExtractor) inferTitleFromChildren(childrenArray []interface{}, depth int) string {
+	if e.verbose {
+		fmt.Printf("%s开始从子节点推断标题，子节点数: %d\n", strings.Repeat("  ", depth), len(childrenArray))
+	}
+
+	// 收集所有子节点的名称
+	var childNames []string
+	for _, child := range childrenArray {
+		if childMap, ok := child.(map[string]interface{}); ok {
+			// 尝试从子节点的data中提取text
+			if childData, hasData := childMap["data"]; hasData {
+				if dataMap, ok := childData.(map[string]interface{}); ok {
+					if textVal, hasText := dataMap["text"]; hasText {
+						if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+							childNames = append(childNames, textStr)
+							if e.verbose {
+								fmt.Printf("%s找到子节点文本: '%s'\n", strings.Repeat("  ", depth), textStr)
+							}
+						}
+					}
+					// 也检查richText
+					if richTextArray, hasRichText := dataMap["richText"]; hasRichText {
+						if richTextItems, ok := richTextArray.([]interface{}); ok {
+							for _, item := range richTextItems {
+								if richTextObj, ok := item.(map[string]interface{}); ok {
+									if textVal, hasText := richTextObj["text"]; hasText {
+										if textStr, ok := textVal.(string); ok && textStr != "" && e.isBusinessText(textStr) {
+											childNames = append(childNames, textStr)
+											if e.verbose {
+												fmt.Printf("%s找到子节点richText: '%s'\n", strings.Repeat("  ", depth), textStr)
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if len(childNames) == 0 {
+		if e.verbose {
+			fmt.Printf("%s未找到有效的子节点文本\n", strings.Repeat("  ", depth))
+		}
+		return ""
+	}
+
+	// 分析子节点名称的模式来推断父节点标题
+	if e.verbose {
+		fmt.Printf("%s子节点名称: %v\n", strings.Repeat("  ", depth), childNames)
+	}
+
+	// 模式1: 如果子节点都包含时间相关的词汇（如"3秒后"、"5秒后"），推断为时间相关的自动操作
+	timeRelatedCount := 0
+	for _, name := range childNames {
+		if strings.Contains(name, "秒后") || strings.Contains(name, "分钟后") || strings.Contains(name, "自动收起") || strings.Contains(name, "自动关闭") {
+			timeRelatedCount++
+		}
+	}
+	if timeRelatedCount > 0 && timeRelatedCount == len(childNames) {
+		return "自动收起/关闭"
+	}
+
+	// 模式2: 如果子节点包含"埋点"、"上报"、"筛选"等词汇，推断为数据埋点相关
+	for _, name := range childNames {
+		if strings.Contains(name, "埋点") || strings.Contains(name, "上报") || strings.Contains(name, "快捷筛选") {
+			return "数据埋点与统计"
+		}
+	}
+
+	// 模式3: 如果子节点包含配置、开关、tcc等词汇，推断为配置相关
+	for _, name := range childNames {
+		if strings.Contains(name, "配置") || strings.Contains(name, "开关") || strings.Contains(name, "tcc") || strings.Contains(name, "手动设置") {
+			return "配置与开关状态"
+		}
+	}
+
+	// 模式4: 如果子节点包含BD相关操作，推断为BD操作
+	for _, name := range childNames {
+		if strings.Contains(name, "BD") || strings.Contains(name, "手动设置") {
+			return "BD手动配置与状态"
+		}
+	}
+
+	// 模式5: 通用模式 - 从子节点名称中提取共同的关键词
+	allText := strings.Join(childNames, " ")
+
+	// 检查是否有明显的业务主题
+	businessThemes := []struct {
+		keywords []string
+		title    string
+	}{
+		{[]string{"助手", "引导", "收起", "自动"}, "AI助手交互"},
+		{[]string{"外呼", "开关", "配置"}, "自动外呼配置"},
+		{[]string{"筛选", "埋点", "统计"}, "筛选埋点功能"},
+		{[]string{"状态", "开关", "tcc"}, "状态管理"},
+	}
+
+	for _, theme := range businessThemes {
+		matchCount := 0
+		for _, keyword := range theme.keywords {
+			if strings.Contains(allText, keyword) {
+				matchCount++
+			}
+		}
+		if matchCount >= 2 { // 至少匹配两个关键词
+			return theme.title
+		}
+	}
+
+	// 模式6: 如果所有模式都不匹配，返回第一个子节点的核心概念
+	if len(childNames) > 0 {
+	 firstName := childNames[0]
+		// 提取前几个字符作为简化标题
+		if len([]rune(firstName)) > 10 {
+			return string([]rune(firstName)[:8]) + "..."
+		}
+		return firstName
+	}
+
+	return ""
+}
+
 // max 返回两个整数中的较大值
 func max(a, b int) int {
 	if a > b {
 		return a
 	}
 	return b
+}
+
+// marshalJSONWithoutEscape 自定义JSON序列化，处理Unicode转义
+func marshalJSONWithoutEscape(v interface{}) ([]byte, error) {
+	// 先使用标准的json.MarshalIndent进行序列化
+	data, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	// 先处理常见的Unicode转义序列为实际字符
+	result := bytes.ReplaceAll(data, []byte("\\u0026"), []byte("&"))
+	result = bytes.ReplaceAll(result, []byte("\\u003c"), []byte("<"))
+	result = bytes.ReplaceAll(result, []byte("\\u003e"), []byte(">"))
+	result = bytes.ReplaceAll(result, []byte("\\u0027"), []byte("'"))
+
+	// 注意：不处理 \u0022 和 \u005c，因为它们会破坏JSON格式
+	// 只处理非JSON结构性的Unicode转义
+
+	// 然后使用更通用的方法：解码所有的Unicode转义序列
+	result = decodeUnicodeEscapes(result)
+
+	// 不处理字符串内的引号转义，以保持JSON格式有效性
+	// 如果你需要更可读的输出，可以考虑生成其他格式（如纯文本）
+
+	return result, nil
+}
+
+
+// decodeUnicodeEscapes 解码所有Unicode转义序列
+func decodeUnicodeEscapes(data []byte) []byte {
+	result := data
+	i := 0
+
+	for i < len(result) {
+		// 查找Unicode转义序列的开始 \u
+		if i+5 < len(result) && result[i] == '\\' && result[i+1] == 'u' {
+			// 提取4位十六进制数
+			hexStr := string(result[i+2 : i+6])
+
+			// 解析十六进制数
+			var r rune
+			_, err := fmt.Sscanf(hexStr, "%04x", &r)
+			if err == nil && utf8.ValidRune(r) {
+				// 将rune编码为UTF-8字节
+				utf8Bytes := make([]byte, 4)
+				n := utf8.EncodeRune(utf8Bytes, r)
+				utf8Bytes = utf8Bytes[:n]
+
+				// 替换���义序列
+				before := result[:i]
+				after := result[i+6:]
+				result = append(append(before, utf8Bytes...), after...)
+
+				// 跳过新插入的UTF-8字节
+				i += n
+				continue
+			}
+		}
+		i++
+	}
+
+	return result
 }

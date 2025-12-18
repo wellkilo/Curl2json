@@ -51,6 +51,58 @@ func TestCurlParser_Parse(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "F12风格的data-binary请求（无引号）",
+			curl: `curl -X POST http://example.com/api -H "Content-Type: application/json" --data-binary {"productId":123,"testCaseId":456}`,
+			want: &config.RequestInfo{
+				Method:  "POST",
+				URL:     "http://example.com/api",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"productId":123,"testCaseId":456}`,
+			},
+			wantErr: false,
+		},
+		{
+			name: "F12风格的data-binary请求（单引号）",
+			curl: `curl -X POST http://example.com/api -H "Content-Type: application/json" --data-binary '{"productId":123,"testCaseId":456}'`,
+			want: &config.RequestInfo{
+				Method:  "POST",
+				URL:     "http://example.com/api",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"productId":123,"testCaseId":456}`,
+			},
+			wantErr: false,
+		},
+		{
+			name: "F12风格的data-binary请求（混合引号和复杂JSON）",
+			curl: `curl -X POST http://example.com/api -H "Content-Type: application/json" --data-binary {"productId":123,"data":{"nested":{"key":"value"}}}`,
+			want: &config.RequestInfo{
+				Method:  "POST",
+				URL:     "http://example.com/api",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"productId":123,"data":{"nested":{"key":"value"}}}`,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Charles风格的data-binary请求（转义双引号）",
+			curl: `curl -X POST http://example.com/api -H "Content-Type: application/json" --data-binary "{\"productId\":123,\"testCaseId\":456}"`,
+			want: &config.RequestInfo{
+				Method:  "POST",
+				URL:     "http://example.com/api",
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"productId":123,"testCaseId":456}`,
+			},
+			wantErr: false,
+		},
+		{
 			name:    "空cURL命令",
 			curl:    "",
 			want:    nil,
