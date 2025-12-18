@@ -21,7 +21,7 @@
                             "name": "无收藏时&有收藏入口展示，点击进入列表无收藏数据",
                             "children": [
                               {
-                                "name": "抖音手机号登录",
+                                "name": "​",
                                 "children": [
                                   {
                                     "name": "1、点击页面顶部团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、关闭页面弹窗\n3、点击右上角【更多】\n4、点击【团购收藏】按钮",
@@ -125,7 +125,7 @@
                             "name": "无登录正常展示收藏入口",
                             "children": [
                               {
-                                "name": "1、冷启动进入a...",
+                                "name": "未登录",
                                 "children": [
                                   {
                                     "name": "1、冷启动进入app，入口展示",
@@ -151,7 +151,7 @@
                         "name": "生命周期内首次收藏展示收藏浮层",
                         "children": [
                           {
-                            "name": "抖音手机号登录",
+                            "name": "​",
                             "children": [
                               {
                                 "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、在团购页面，长按右下角【我】\n4、在【kit】标签页，顶部搜索框输入【本地频控清理工具】，点击选择\n5、点击“业务场景：新用户收藏回访弹窗”下的点击【一键清理】按钮\n7、冷启动应用\n​8、点击页面顶部团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n9、关闭页面弹窗\n10、在搜索栏搜索【瑞幸咖啡】点击搜索商品展示区的第一个商品\n11、点击第一个瑞幸咖啡商家店名卡片\n12、点击页面右上角的五角星形状收藏按钮\n",
@@ -179,7 +179,7 @@
                         "name": "收藏浮层点击可跳转团购拉起9分屏带返回条",
                         "children": [
                           {
-                            "name": "抖音手机号登录",
+                            "name": "​",
                             "children": [
                               {
                                 "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、在团购页面，长按右下角【我】\n4、在【kit】标签页，顶部搜索框输入【本地频控清理工具】，点击选择\n5、点击“业务场景：新用户收藏回访弹窗”下的点击【一键清理】按钮\n7、冷启动应用\n8、点击页面顶部团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n9、关闭页面弹窗\n10、在搜索栏搜索【瑞幸咖啡】点击搜索商品展示区的第一个商品\n11、点击第一个瑞幸咖啡商家店名卡片\n12、点击页面右上角的五角星形状收藏按钮\n​13、点击弹出的半屏浮窗中的“查看收藏入口”\n14、等待5s\n",
@@ -198,7 +198,7 @@
                         "name": "浮层跳转团购带的返回条点击能正常跳转回刚收藏的poi页",
                         "children": [
                           {
-                            "name": "抖音手机号登录",
+                            "name": "​",
                             "children": [
                               {
                                 "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、在团购页面，长按右下角【我】\n4、在【kit】标签页，顶部搜索框输入【本地频控清理工具】，点击选择\n5、点击“业务场景：新用户收藏回访弹窗”下的点击【一键清理】按钮\n7、冷启动应用\n8、点击页面顶部团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n9、关闭页面弹窗\n10、在搜索栏搜索【瑞幸咖啡】点击搜索商品展示区的第一个商品\n11、点击第一个瑞幸咖啡商家店名卡片\n​12、点击页面右上角的五角星形状收藏按钮\n13、点击弹出的半屏浮窗中的“查看收藏入口”\n14、点击左下角灰色【<返回地点】返回条",
@@ -225,7 +225,7 @@
                             "name": "非首次收藏，收藏poi出收藏成功引导条",
                             "children": [
                               {
-                                "name": "抖音手机号登录",
+                                "name": "​",
                                 "children": [
                                   {
                                     "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、关闭页面弹窗\n4、在搜索栏搜索【瑞幸咖啡】点击搜索商品展示区的第一个商品\n5、点击第一个瑞幸咖啡商家店名卡片\n6、点击页面右上角角的五角星形状收藏按钮\n7、点击页面下方弹出的【收藏成功，去看看】弹窗\n",
@@ -243,13 +243,13 @@
                         ]
                       },
                       {
-                        "name": "非首次收藏，收藏...",
+                        "name": "收藏商品",
                         "children": [
                           {
                             "name": "非首次收藏，收藏商品出收藏成功气泡",
                             "children": [
                               {
-                                "name": "抖音手机号登录",
+                                "name": "​",
                                 "children": [
                                   {
                                     "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、关闭页面弹窗\n4、在搜索栏搜索【瑞幸咖啡】点击搜索商品展示区的第一个商品\n5、点击第一个瑞幸咖啡商家店名卡片\n6、点击页面左下角的五角星形状收藏按钮\n7、点击页面下方弹出的【收藏成功，去看看】弹窗",
@@ -291,50 +291,20 @@
                     "name": "收藏一致性",
                     "children": [
                       {
-                        "name": "同账号下收藏的数...",
+                        "name": "增加收藏",
                         "children": [
                           {
                             "name": "同账号下收藏的数据抖音抖极互通",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": [
-                                  {
-                                    "name": "1、同账号下收藏...",
-                                    "children": [
-                                      {
-                                        "name": "1、同账号下收藏的数据抖音抖极互通\n2、收藏控件现状已收藏的icon",
-                                        "children": []
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
+                            "children": []
                           }
                         ]
                       },
                       {
-                        "name": "同账号取消收藏的...",
+                        "name": "取消收藏",
                         "children": [
                           {
                             "name": "同账号取消收藏的数据不展示抖音抖极互通",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": [
-                                  {
-                                    "name": "同账号取消收藏的...",
-                                    "children": [
-                                      {
-                                        "name": "同账号取消收藏的数据不展示，抖音抖极互通\n2、收藏控件现状未收藏的icon",
-                                        "children": []
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
+                            "children": []
                           }
                         ]
                       }
@@ -384,7 +354,7 @@
                     ]
                   },
                   {
-                    "name": "配置与开关状态",
+                    "name": "隐私合规",
                     "children": [
                       {
                         "name": "开关打开，好友可见收藏",
@@ -433,7 +403,7 @@
                         "name": "检查收藏列表中的POI信息",
                         "children": [
                           {
-                            "name": "抖音手机号登录",
+                            "name": "​",
                             "children": [
                               {
                                 "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、点击团购页面右上角【更多】按钮\n4、点击【团购收藏】按钮，进入收藏列表",
@@ -450,7 +420,7 @@
                                         "children": []
                                       },
                                       {
-                                        "name": "记录业务场景",
+                                        "name": "​",
                                         "children": [
                                           {
                                             "name": "商品详情页价格与<<<第一个商品价格一致>>>",
@@ -481,7 +451,7 @@
                                 ]
                               },
                               {
-                                "name": "有POI三级类目...",
+                                "name": "检查品类",
                                 "children": [
                                   {
                                     "name": "有POI三级类目，直接展示；无POI三级类目时，隐藏，后面信息向前缩进",
@@ -490,7 +460,7 @@
                                 ]
                               },
                               {
-                                "name": "1. POI有商...",
+                                "name": "检查商圈",
                                 "children": [
                                   {
                                     "name": "1. POI有商圈时，展示POI对应商圈；2. POI无商圈有L4时，展示POI对应L4；3. POI无商圈无L4，隐藏，后面信息向前缩进",
@@ -554,7 +524,12 @@
                               },
                               {
                                 "name": "点击团购标签，进入团购商品对应poi详情页",
-                                "children": []
+                                "children": [
+                                  {
+                                    "name": "价格一致",
+                                    "children": []
+                                  }
+                                ]
                               },
                               {
                                 "name": "一天内收藏的，检查收藏时间展示",
@@ -612,7 +587,7 @@
                             "name": "按时间排序正常",
                             "children": [
                               {
-                                "name": "抖音手机号登录",
+                                "name": "​",
                                 "children": [
                                   {
                                     "name": "1、点击团购tab（如果没有则向右滑动顶部Tab，直到“团购”tab可见）\n2、等待3秒\n3、点击团购页面右上角【更多】按钮\n4、点击【团购收藏】按钮，进入收藏列表",
@@ -666,24 +641,14 @@
             "name": "引流收藏提醒",
             "children": [
               {
-                "name": "1、端上不出气泡...",
+                "name": "前置条件",
                 "children": [
                   {
                     "name": "1、端上不出气泡，看这里",
                     "children": [
                       {
-                        "name": "未命名节点",
-                        "children": [
-                          {
-                            "name": "未命名节点",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": []
-                              }
-                            ]
-                          }
-                        ]
+                        "name": "https://bytedance.larkoffice.com/docx/TGNLd1SfSoeW7KxPBuYc4gFxn8d",
+                        "children": []
                       }
                     ]
                   },
@@ -692,17 +657,7 @@
                     "children": [
                       {
                         "name": "抖音：https://data.bytedance.net/libra/flight/3054728/edit\n抖极：https://data.bytedance.net/libra/flight/3153059/edit",
-                        "children": [
-                          {
-                            "name": "未命名节点",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": []
-                              }
-                            ]
-                          }
-                        ]
+                        "children": []
                       }
                     ]
                   },
@@ -711,49 +666,14 @@
                     "children": [
                       {
                         "name": "加uid规避服务端频控",
-                        "children": [
-                          {
-                            "name": "加uid规避se...",
-                            "children": [
-                              {
-                                "name": "加uid规避server频控",
-                                "children": [
-                                  {
-                                    "name": "未命名节点",
-                                    "children": [
-                                      {
-                                        "name": "未命名节点",
-                                        "children": []
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
+                        "children": []
                       },
                       {
                         "name": " 配置tcc价格",
                         "children": [
                           {
                             "name": "tcc改这里即可",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": [
-                                  {
-                                    "name": "未命名节点",
-                                    "children": [
-                                      {
-                                        "name": "https://cloud.bytedance.net/tcc/namespace/life.mall.collect?by_key=false&condition=name&configId=&dir_path=all_dir&env=ppe_collect_spu&filter_no_tag=false&keyword=mock&ns_name=life.mall.collect&order=&pn=1&region=all_region&rn=100&scope=all&tab=&x-resource-account=public",
-                                        "children": []
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
+                            "children": []
                           }
                         ]
                       }
@@ -764,17 +684,7 @@
                     "children": [
                       {
                         "name": "12342834289-飞书-1585967953357048",
-                        "children": [
-                          {
-                            "name": "未命名节点",
-                            "children": [
-                              {
-                                "name": "未命名节点",
-                                "children": []
-                              }
-                            ]
-                          }
-                        ]
+                        "children": []
                       }
                     ]
                   }
@@ -784,19 +694,19 @@
                 "name": "涉及场景",
                 "children": [
                   {
-                    "name": "配置与开关状态",
+                    "name": "收藏",
                     "children": [
                       {
                         "name": "收藏降价（配置：执行收藏提醒的case尽量执行完后，将该商品重新操作一下收藏，因为有效期是30天）",
                         "children": [
                           {
-                            "name": "收藏降价链路触发气泡",
+                            "name": "线上全量",
                             "children": [
                               {
                                 "name": "收藏降价链路触发气泡",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐",
@@ -815,7 +725,7 @@
                                 "name": "收藏降价链路触发气泡承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n​4、点击气泡",
@@ -834,7 +744,7 @@
                                 "name": "收藏降价链路触发气泡降价红点承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、出气泡后等待5s\n",
@@ -863,16 +773,16 @@
                         ]
                       },
                       {
-                        "name": "实验中",
+                        "name": "收藏秒杀",
                         "children": [
                           {
-                            "name": "收藏秒杀链路触发...",
+                            "name": "线上全量",
                             "children": [
                               {
                                 "name": "收藏秒杀链路触发的红点承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、点击红点",
@@ -896,7 +806,7 @@
                                 "name": "收藏秒杀链路触发的是气泡",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n",
@@ -915,7 +825,7 @@
                                 "name": "收藏秒杀链路触发的是气泡承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、点击气泡",
@@ -985,19 +895,19 @@
                     ]
                   },
                   {
-                    "name": "未命名节点",
+                    "name": "交易",
                     "children": [
                       {
-                        "name": "实验中",
+                        "name": "交易降价",
                         "children": [
                           {
-                            "name": "交易降价链路触发...",
+                            "name": "线上全量",
                             "children": [
                               {
                                 "name": "交易降价链路触发的红点承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、点击红点",
@@ -1021,7 +931,7 @@
                                 "name": "易降价链路触发的气泡",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n",
@@ -1040,7 +950,7 @@
                                 "name": "交易降价链路触发的气泡承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、点击气泡",
@@ -1060,16 +970,16 @@
                         ]
                       },
                       {
-                        "name": "实验中",
+                        "name": "交易秒杀",
                         "children": [
                           {
-                            "name": "交易秒杀链路触发...",
+                            "name": "线上全量",
                             "children": [
                               {
                                 "name": "交易秒杀链路触发的红点承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n4、点击红点",
@@ -1093,7 +1003,7 @@
                                 "name": "交易秒杀链路触发的是气泡",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n",
@@ -1112,7 +1022,7 @@
                                 "name": "交易秒杀链路触发的是气泡承接",
                                 "children": [
                                   {
-                                    "name": "配置与开关状态",
+                                    "name": "https://bytedance.larkoffice.com/docx/ElGsdoqQNo0jWGxttzFcAAUCnNe",
                                     "children": [
                                       {
                                         "name": "1、规避频控\n2、配置tcc\n3、冷启动进入推荐\n​4、点击气泡",
@@ -1162,23 +1072,8 @@
             ]
           },
           {
-            "name": "未命名节点",
-            "children": [
-              {
-                "name": "未命名节点",
-                "children": [
-                  {
-                    "name": "未命名节点",
-                    "children": [
-                      {
-                        "name": "未命名节点",
-                        "children": []
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+            "name": "横幅",
+            "children": []
           }
         ]
       }
