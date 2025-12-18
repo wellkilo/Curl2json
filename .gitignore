@@ -1,0 +1,53 @@
+# Claude配置目录
+.claude/
+
+# macOS系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# 可执行文件
+caseurl2md
+
+# 输出文件（可选，根据需要调整）
+# result.json
+# output_*.json
+# debug_response_*.json
+
+# IDE配置文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# 日志文件
+*.log
+debug.log
+
+# 编译相关
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go vendor目录（如果有）
+vendor/
+
+# 测试覆盖率报告
+coverage.out
+*.cover
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
