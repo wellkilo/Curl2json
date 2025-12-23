@@ -1,10 +1,10 @@
-# caseurl2md
+# Curl2json
 
 cURL请求到树状JSON转换工具 - 智能解析业务用例结构
 
 ## 功能介绍
 
-caseurl2md 是一个智能的命令行工具，能够将cURL命令转换为完整的业务用例树状JSON结构。该工具具备以下核心能力：
+Curl2json 是一个智能的命令行工具，能够将cURL命令转换为完整的业务用例树状JSON结构。该工具具备以下核心能力：
 
 1. 解析cURL命令参数
 2. 执行HTTP请求并获取数据
@@ -26,16 +26,16 @@ caseurl2md 是一个智能的命令行工具，能够将cURL命令转换为完�
 
 ```bash
 git clone <repository-url>
-cd caseurl2md
-go build -o caseurl2md .
+cd Curl2json
+go build -o Curl2json .
 ```
 
 ### 使用
 
-编译成功后，将 `caseurl2md` 可执行文件放到你的 PATH 中：
+编译成功后，将 `Curl2json` 可执行文件放到你的 PATH 中：
 
 ```bash
-sudo mv caseurl2md /usr/local/bin/
+sudo mv Curl2json /usr/local/bin/
 ```
 
 ## 使用方法
@@ -45,7 +45,7 @@ sudo mv caseurl2md /usr/local/bin/
 直接粘贴完整的F12 curl命令，无需手动分离参数：
 
 ```bash
-./caseurl2md --raw-curl 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
+./Curl2json --raw-curl 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
   -H "accept: application/json, text/plain, */*" \
   -H "content-type: application/json" \
   -H "x-jwt-token: YOUR_JWT_TOKEN" \
@@ -66,19 +66,19 @@ echo 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
   --data-raw "{\"key\":\"value\"}' > curl_command.txt
 
 # 直接处理文件中的curl命令
-./caseurl2md --curl-file curl_command.txt --out result.json
+./Curl2json --curl-file curl_command.txt --out result.json
 ```
 
 ### 3. 传统cURL命令格式
 
 ```bash
-./caseurl2md --from-curl 'curl "http://api.example.com/data" -H "Authorization: Bearer token"'
+./Curl2json --from-curl 'curl "http://api.example.com/data" -H "Authorization: Bearer token"'
 ```
 
 ### 4. 手动指定参数
 
 ```bash
-./caseurl2md --url "http://api.example.com/data" \
+./Curl2json --url "http://api.example.com/data" \
              --header "Content-Type: application/json" \
              --header "Authorization: Bearer token" \
              --method GET
@@ -87,7 +87,7 @@ echo 'curl "https://bytest.bytedance.net/caseApi/getCaseDetail" \
 ### 5. 从stdin读取
 
 ```bash
-echo 'curl "http://api.example.com/data"' | ./caseurl2md
+echo 'curl "http://api.example.com/data"' | ./Curl2json
 ```
 
 ## 命令行参数
@@ -118,7 +118,7 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 5. 直接粘贴到命令行：
 
 ```bash
-./caseurl2md --raw-curl '这里粘贴完整的F12 curl命令'
+./Curl2json --raw-curl '这里粘贴完整的F12 curl命令'
 ```
 
 #### 支持的F12格式特性
@@ -237,7 +237,7 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 处理复杂的业务测试用例API，例如客户数据资产中心的测试用例：
 
 ```bash
-./caseurl2md --from-curl 'curl -H "Host: bytest.bytedance.net" -H "x-jwt-token: YOUR_TOKEN" \
+./Curl2json --from-curl 'curl -H "Host: bytest.bytedance.net" -H "x-jwt-token: YOUR_TOKEN" \
     -H "servicefunc: GetTestCase" -H "service: CaseService" \
     -H "content-type: application/json" -H "projectid: 2020093407" \
     --data-binary '{"ProductId":2020093407,"TestCaseId":11908032,"Operator":"username"}' \
@@ -327,7 +327,7 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 处理常规的REST API数据：
 
 ```bash
-./caseurl2md --url "http://api.example.com/projects" \
+./Curl2json --url "http://api.example.com/projects" \
              --title-key "title,name,label" \
              --children-keys "items,children,nodes" \
              --verbose
@@ -350,7 +350,7 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 
 1. **使用 `--verbose` 参数**查看详细解析过程：
    ```bash
-   ./caseurl2md --from-curl 'your-curl-command' --verbose
+   ./Curl2json --from-curl 'your-curl-command' --verbose
    ```
 
 2. **检查业务文本识别**：如果某些业务文本被过滤，查看日志中的"业务文本"判断信息
@@ -368,10 +368,10 @@ echo 'curl "http://api.example.com/data"' | ./caseurl2md
 ### 项目结构
 
 ```
-caseurl2md/
+Curl2json/
 ├── main.go                    # 主入口程序
 ├── internal/
-│   ├── cli/                   # CLI参数处理和命令行界面
+│   ├─��� cli/                   # CLI参数处理和命令行界面
 │   ├── config/                # 配置管理和数据结构
 │   ├── parser/                # cURL命令解析器
 │   ├── http/                  # HTTP请求执行器
@@ -432,13 +432,13 @@ caseurl2md/
 **使用体验革命性提升**：
 ```bash
 # 之前：需要手动分离参数
-./caseurl2md --url "https://api.example.com" \
+./Curl2json --url "https://api.example.com" \
              --header "Authorization: token" \
              --header "Content-Type: application/json" \
              --data '{"key":"value"}'
 
 # 现在：直接粘贴F12完整curl命令
-./caseurl2md --raw-curl 'curl "https://api.example.com" \
+./Curl2json --raw-curl 'curl "https://api.example.com" \
   -H "Authorization: token" \
   -H "Content-Type: application/json" \
   --data-raw "{\"key\":\"value\"}" \
@@ -480,13 +480,13 @@ caseurl2md/
 
 ```bash
 # 编译项目
-go build -o caseurl2md .
+go build -o Curl2json .
 
 # 测试基本功能
-./caseurl2md --url "http://httpbin.org/json" --verbose
+./Curl2json --url "http://httpbin.org/json" --verbose
 
 # 测试复杂业务用例解析
-./caseurl2md --from-curl 'curl -H "Content-Type: application/json" "https://api.example.com/cases"' --verbose
+./Curl2json --from-curl 'curl -H "Content-Type: application/json" "https://api.example.com/cases"' --verbose
 ```
 
 ### 开发指南
@@ -526,3 +526,11 @@ go build -o caseurl2md .
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+### 贡献指南
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
