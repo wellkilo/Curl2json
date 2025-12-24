@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"caseurl2md/internal/config"
+	"Curl2json/internal/config"
 )
 
 // Executor HTTP请求执行器

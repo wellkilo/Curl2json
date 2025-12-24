@@ -1,7 +1,7 @@
 package main
 
 import (
-	"caseurl2md/internal/cli"
+	"Curl2json/internal/cli"
 	"os"
 )
 

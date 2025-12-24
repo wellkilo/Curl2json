@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"caseurl2md/internal/config"
-	"caseurl2md/internal/extractor"
-	"caseurl2md/internal/http"
-	"caseurl2md/internal/parser"
-	"caseurl2md/internal/validator"
+	"Curl2json/internal/config"
+	"Curl2json/internal/extractor"
+	"Curl2json/internal/http"
+	"Curl2json/internal/parser"
+	"Curl2json/internal/validator"
 )
 
 // Processor 主处理器

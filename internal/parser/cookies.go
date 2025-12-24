@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"caseurl2md/internal/config"
+	"Curl2json/internal/config"
 )
 
 // parseCookies 解析 -b 或 --cookie 参数
