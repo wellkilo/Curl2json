@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 
-	"caseurl2md/internal/config"
+	"Curl2json/internal/config"
 )
 
 func TestCurlParser_Parse(t *testing.T) {

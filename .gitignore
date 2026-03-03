@@ -9,7 +9,11 @@ Icon?
 ._*
 
 # 可执行文件
+<<<<<<< HEAD
 caseurl2md
+=======
+Curl2json
+>>>>>>> origin/main
 
 # 输出文件（可选，根据需要调整）
 # result.json

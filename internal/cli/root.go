@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"caseurl2md/internal/config"
-	"caseurl2md/internal/processor"
+	"Curl2json/internal/config"
+	"Curl2json/internal/processor"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "caseurl2md",
+	Use:   "Curl2json",
 	Short: "cURL请求到树状JSON转换工具",
 	Long: `将cURL命令转换为精简的树状JSON结构工具。
 
@@ -44,13 +44,13 @@ var rootCmd = &cobra.Command{
 - 从文件读取cURL命令
 - 通过命令行参数直接指定请求信息`,
 	Example: `  # 直接使用cURL命令
-  ./caseurl2md --from-curl 'curl "http://example.com/api" -H "Authorization: Bearer token"'
+  ./Curl2json --from-curl 'curl "http://example.com/api" -H "Authorization: Bearer token"'
 
   # 从文件读取cURL
-  ./caseurl2md --curl-file curl.txt --out result.json
+  ./Curl2json --curl-file curl.txt --out result.json
 
   # 手动指定参数
-  ./caseurl2md --url "http://api.example.com/data" --header "Content-Type: application/json" --method POST`,
+  ./Curl2json --url "http://api.example.com/data" --header "Content-Type: application/json" --method POST`,
 	RunE: runRoot,
 }
 

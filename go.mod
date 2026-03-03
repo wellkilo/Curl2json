@@ -1,4 +1,4 @@
-module caseurl2md
+module Curl2json
 
 go 1.21
 

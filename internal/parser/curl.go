@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"caseurl2md/internal/config"
+	"Curl2json/internal/config"
 )
 
 // CurlParser cURL解析器
