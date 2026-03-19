@@ -1,6 +1,6 @@
 # Curl2json
 
-cURL请求到树状JSON转换工具 - 智能解析业务用例结构
+cURL请求到树状JSON转换工具
 
 ## 功能介绍
 
