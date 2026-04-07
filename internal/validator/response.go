@@ -4,14 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-)
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
+	"Curl2json/internal/util"
+)
 
 // ResponseValidator 响应校验器
 type ResponseValidator struct {
@@ -33,7 +28,7 @@ func (v *ResponseValidator) Validate(data []byte) error {
 
 	if v.verbose {
 		fmt.Printf("开始校验响应，响应体大小: %d 字节\n", len(data))
-		fmt.Printf("响应体前100字符: %s\n", string(data[:min(100, len(data))]))
+		fmt.Printf("响应体前100字符: %s\n", string(data[:util.Min(100, len(data))]))
 	}
 
 	// 尝试解析JSON
@@ -42,7 +37,7 @@ func (v *ResponseValidator) Validate(data []byte) error {
 		// 输出详细的JSON解析错误信息
 		if v.verbose {
 			fmt.Printf("JSON解析失败: %v\n", err)
-			fmt.Printf("原始响应数据: %s\n", string(data[:min(500, len(data))]))
+			fmt.Printf("原始响应数据: %s\n", string(data[:util.Min(500, len(data))]))
 		}
 		return fmt.Errorf("JSON解析失败: %w", err)
 	}
@@ -62,6 +57,6 @@ func (v *ResponseValidator) IsJSONContentType(contentType string) bool {
 
 	ct := strings.ToLower(contentType)
 	return strings.Contains(ct, "application/json") ||
-		   strings.Contains(ct, "text/json") ||
-		   strings.Contains(ct, "application/vnd.api+json")
+		strings.Contains(ct, "text/json") ||
+		strings.Contains(ct, "application/vnd.api+json")
 }

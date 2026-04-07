@@ -104,10 +104,8 @@ func parseHeaders(args string, info *config.RequestInfo) {
 		if word == "-H" || word == "--header" {
 			if i+1 < len(words) {
 				headerValue := words[i+1]
-				// 解析单个header
-				if err := parseHeader(headerValue, info.Headers); err == nil {
-					// 成功解析header
-				}
+				// 解析单个header，忽略错误以保持向后兼容
+				_ = parseHeader(headerValue, info.Headers)
 				i++ // 跳过下一个词，因为它是header值
 			}
 		}
@@ -129,8 +127,8 @@ func parseHeader(header string, headers map[string]string) error {
 func isURL(str string) bool {
 	// 简单的URL检测
 	return strings.HasPrefix(str, "http://") ||
-		   strings.HasPrefix(str, "https://") ||
-		   strings.Contains(str, "://")
+		strings.HasPrefix(str, "https://") ||
+		strings.Contains(str, "://")
 }
 
 // extractDataParameter 提取指定类型的data参数，处理复杂JSON
@@ -312,10 +310,8 @@ func parseComplexCurl(curlCmd string) (*config.RequestInfo, error) {
 	for _, match := range headerMatches {
 		if len(match) > 1 {
 			headerStr := match[1] // match[1]是header值
-			// 解析单个header
-			if err := parseHeader(headerStr, info.Headers); err == nil {
-				// 成功解析header
-			}
+			// 解析单个header，忽略错误以保持向后兼容
+			_ = parseHeader(headerStr, info.Headers)
 		}
 	}
 

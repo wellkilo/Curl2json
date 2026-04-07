@@ -17,20 +17,20 @@ import (
 
 // Processor 主处理器
 type Processor struct {
-	config    *config.Config
-	curlParser *parser.CurlParser
-	httpExecutor *http.Executor
-	validator *validator.ResponseValidator
+	config        *config.Config
+	curlParser    *parser.CurlParser
+	httpExecutor  *http.Executor
+	validator     *validator.ResponseValidator
 	treeExtractor *extractor.TreeExtractor
 }
 
 // New 创建新的处理器
 func New(cfg *config.Config) *Processor {
 	return &Processor{
-		config:       cfg,
-		curlParser:   parser.New(),
-		httpExecutor: http.New(cfg.Timeout, cfg.Verbose),
-		validator:    validator.New(cfg.Verbose),
+		config:        cfg,
+		curlParser:    parser.New(),
+		httpExecutor:  http.New(cfg.Timeout, cfg.Verbose),
+		validator:     validator.New(cfg.Verbose),
 		treeExtractor: extractor.New(cfg.TitleKeys, cfg.ChildrenKeys, cfg.Verbose),
 	}
 }
@@ -149,9 +149,9 @@ func (p *Processor) isErrorResponse(responseData []byte) bool {
 	// 检查是否包含错误消息
 	if message, exists := response["message"]; exists {
 		if messageStr, ok := message.(string); ok &&
-		   strings.Contains(strings.ToLower(messageStr), "error") ||
-		   strings.Contains(strings.ToLower(messageStr), "auth") ||
-		   strings.Contains(strings.ToLower(messageStr), "unauthorized") {
+			(strings.Contains(strings.ToLower(messageStr), "error") ||
+				strings.Contains(strings.ToLower(messageStr), "auth") ||
+				strings.Contains(strings.ToLower(messageStr), "unauthorized")) {
 			return true
 		}
 	}
